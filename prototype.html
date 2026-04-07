@@ -3,649 +3,2303 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NetSentinel — IOB AML Intelligence Platform</title>
+<title>NetSentinel — AML Intelligence Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #080F1A; color: #E2EAF4; min-height: 100vh; }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
 
-.app { display: flex; flex-direction: column; min-height: 100vh; }
+  :root {
+    --bg: #050810;
+    --bg2: #080d1a;
+    --bg3: #0d1425;
+    --panel: #0f1828;
+    --border: #1a2640;
+    --border2: #243350;
+    --cyan: #00d4ff;
+    --cyan2: #00a8cc;
+    --red: #ff3b5c;
+    --orange: #ff8c42;
+    --green: #00e676;
+    --yellow: #ffd600;
+    --text: #e8f0fe;
+    --text2: #8a9bc0;
+    --text3: #4a5880;
+    --critical: #ff3b5c;
+    --high: #ff8c42;
+    --medium: #ffd600;
+    --low: #00e676;
+  }
 
-.topbar { background: #0E1E30; border-bottom: 1px solid #1E3A5F; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; flex-shrink: 0; }
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-icon { width: 32px; height: 32px; background: #00C2FF; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-.logo-icon svg { width: 18px; height: 18px; fill: #080F1A; }
-.logo-text { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.5px; }
-.logo-text span { color: #00C2FF; }
-.topbar-right { display: flex; align-items: center; gap: 16px; }
-.badge-live { background: #06D6A0; color: #04342C; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; }
-.bank-label { font-size: 12px; color: #6B8BAA; }
-.topbar-time { font-size: 12px; color: #6B8BAA; font-family: monospace; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-.nav { background: #0A1628; border-bottom: 1px solid #1E3A5F; display: flex; padding: 0 24px; flex-shrink: 0; }
-.nav-btn { padding: 14px 20px; font-size: 13px; color: #6B8BAA; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; background: none; border-left: none; border-right: none; border-top: none; font-family: inherit; }
-.nav-btn.active { color: #00C2FF; border-bottom-color: #00C2FF; }
-.nav-btn:hover:not(.active) { color: #E2EAF4; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-.content { flex: 1; padding: 24px; overflow-y: auto; }
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-.screen { display: none; }
-.screen.active { display: block; }
+  /* Header */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5,8,16,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
 
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-.stat-card { background: #0E1E30; border: 1px solid #1E3A5F; border-radius: 12px; padding: 16px 18px; position: relative; overflow: hidden; }
-.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); }
-.stat-label { font-size: 11px; color: #6B8BAA; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.8px; }
-.stat-val { font-size: 28px; font-weight: 700; }
-.stat-sub { font-size: 11px; color: #6B8BAA; margin-top: 5px; }
-.c-red { color: #FF3B5C; } .c-gold { color: #FFD166; } .c-cyan { color: #00C2FF; }
-.c-green { color: #06D6A0; } .c-orange { color: #FF6B35; } .c-purple { color: #9B5DE5; }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-.section-title { font-size: 11px; font-weight: 600; color: #6B8BAA; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+  }
 
-.card { background: #0E1E30; border: 1px solid #1E3A5F; border-radius: 12px; padding: 18px; margin-bottom: 18px; }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
 
-/* ALERT TABLE */
-.alert-table { width: 100%; border-collapse: collapse; }
-.alert-table th { text-align: left; font-size: 11px; color: #6B8BAA; padding: 10px 14px; border-bottom: 1px solid #1E3A5F; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500; }
-.alert-table td { padding: 13px 14px; border-bottom: 1px solid #112236; font-size: 13px; vertical-align: middle; }
-.alert-table tr.data-row:hover td { background: #112236; cursor: pointer; }
-.risk-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
-.risk-critical { background: #2A0A12; color: #FF3B5C; border: 1px solid #FF3B5C55; }
-.risk-high     { background: #1F1208; color: #FF6B35; border: 1px solid #FF6B3555; }
-.risk-medium   { background: #1F1A08; color: #FFD166; border: 1px solid #FFD16655; }
-.risk-monitor  { background: #0A1628; color: #6B8BAA; border: 1px solid #1E3A5F; }
+  .logo-text span { color: var(--cyan); }
 
-.score-bar-wrap { display: flex; align-items: center; gap: 8px; }
-.score-bar-bg { flex: 1; height: 6px; background: #1E3A5F; border-radius: 3px; overflow: hidden; }
-.score-bar-fill { height: 100%; border-radius: 3px; }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
 
-/* GRAPH */
-.graph-wrap { position: relative; width: 100%; height: 420px; background: #050B14; border: 1px solid #1E3A5F; border-radius: 12px; overflow: hidden; margin-bottom: 18px; }
-canvas#graphCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-.graph-legend { display: flex; gap: 24px; margin-bottom: 14px; flex-wrap: wrap; }
-.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6B8BAA; }
-.legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,230,118,0.1);
+    border: 1px solid rgba(0,230,118,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green);
+    font-family: 'Space Mono', monospace;
+  }
 
-#graphTooltip { position: absolute; display: none; background: #0E1E30; border: 1px solid #1E3A5F; border-radius: 10px; padding: 12px 16px; font-size: 12px; pointer-events: none; min-width: 180px; z-index: 10; line-height: 1.8; }
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse-green 1.5s infinite;
+  }
 
-/* DETAIL */
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
-.detail-title { font-size: 17px; font-weight: 600; color: #fff; }
-.detail-sub { font-size: 12px; color: #6B8BAA; margin-top: 3px; }
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
 
-.info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #112236; font-size: 13px; }
-.info-row:last-child { border-bottom: none; }
-.info-key { color: #6B8BAA; }
-.info-val { color: #E2EAF4; font-weight: 500; text-align: right; }
+  .header-stat {
+    text-align: right;
+    font-family: 'Space Mono', monospace;
+  }
 
-.explain-box { background: #050B14; border: 1px solid #00C2FF33; border-left: 3px solid #00C2FF; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
-.explain-label { font-size: 10px; color: #00C2FF; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
-.explain-text { font-size: 13px; color: #E2EAF4; line-height: 1.7; }
+  .header-stat-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--red);
+  }
 
-.tag { display: inline-block; background: #112236; color: #6B8BAA; font-size: 11px; padding: 4px 10px; border-radius: 6px; margin: 3px; border: 1px solid #1E3A5F; }
+  .header-stat-label {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
 
-.sar-box { background: #050B14; border: 1px solid #1E3A5F; border-radius: 8px; padding: 16px; font-size: 12px; color: #6B8BAA; line-height: 2.0; max-height: 360px; overflow-y: auto; }
-.sar-box strong { color: #E2EAF4; font-weight: 600; }
-.sar-header { background: #0A1628; border: 1px solid #1E3A5F; border-radius: 8px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+  /* Nav */
+  .nav {
+    display: flex;
+    gap: 4px;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
 
-/* ONBOARDING */
-.form-group { margin-bottom: 16px; }
-.form-label { font-size: 12px; color: #6B8BAA; margin-bottom: 7px; display: block; font-weight: 500; }
-.form-input, .form-select { width: 100%; background: #050B14; border: 1px solid #1E3A5F; border-radius: 8px; padding: 10px 14px; color: #E2EAF4; font-size: 13px; font-family: inherit; transition: border-color 0.15s; outline: none; }
-.form-input:focus, .form-select:focus { border-color: #00C2FF; }
-.form-select option { background: #0E1E30; }
+  .nav-btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text2);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-.btn-primary { background: #00C2FF; color: #080F1A; border: none; padding: 11px 22px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s; letter-spacing: 0.3px; }
-.btn-primary:hover { background: #00A8E0; }
-.btn-ghost { background: transparent; border: 1px solid #1E3A5F; color: #6B8BAA; padding: 9px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-.btn-ghost:hover { border-color: #00C2FF; color: #00C2FF; }
+  .nav-btn:hover {
+    background: var(--bg3);
+    color: var(--text);
+  }
 
-.risk-meter { margin: 16px 0; }
-.risk-meter-bar { height: 14px; border-radius: 7px; background: linear-gradient(to right, #06D6A0 0%, #FFD166 40%, #FF6B35 70%, #FF3B5C 100%); position: relative; }
-.risk-meter-needle { position: absolute; top: -5px; width: 5px; height: 24px; background: #fff; border-radius: 3px; transform: translateX(-50%); transition: left 0.8s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 0 8px #0008; }
-.risk-score-big { font-size: 48px; font-weight: 700; margin: 12px 0 4px; }
-.risk-verdict { font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 20px; display: inline-block; letter-spacing: 0.5px; }
+  .nav-btn.active {
+    background: rgba(0,212,255,0.1);
+    border-color: rgba(0,212,255,0.3);
+    color: var(--cyan);
+  }
 
-.pulse { animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .nav-btn .badge {
+    background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-family: 'Space Mono', monospace;
+  }
 
-.network-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+  /* Main layout */
+  .main {
+    padding: 24px 32px;
+    position: relative;
+    z-index: 1;
+  }
 
-.footer-bar { background: #0A1628; border-top: 1px solid #1E3A5F; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #6B8BAA; flex-shrink: 0; }
+  /* Screens */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.orange::before { background: var(--orange); }
+  .stat-card.yellow::before { background: var(--yellow); }
+  .stat-card.cyan::before { background: var(--cyan); }
+  .stat-card.green::before { background: var(--green); }
+
+  .stat-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-card.red .stat-val { color: var(--red); }
+  .stat-card.orange .stat-val { color: var(--orange); }
+  .stat-card.yellow .stat-val { color: var(--yellow); }
+  .stat-card.cyan .stat-val { color: var(--cyan); }
+  .stat-card.green .stat-val { color: var(--green); }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .stat-change {
+    font-size: 11px;
+    color: var(--green);
+    margin-top: 4px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Two column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+  }
+
+  /* Panel */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cyan);
+    animation: pulse-green 2s infinite;
+  }
+
+  /* Alert table */
+  .alert-table { width: 100%; }
+
+  .alert-row {
+    display: grid;
+    grid-template-columns: 36px 160px 100px 80px 90px 100px 120px 1fr;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    gap: 12px;
+  }
+
+  .alert-row:hover { background: rgba(0,212,255,0.04); }
+  .alert-row.selected { background: rgba(0,212,255,0.08); border-left: 3px solid var(--cyan); }
+
+  .alert-row.new-alert {
+    animation: slideIn 0.4s ease-out;
+    background: rgba(0,212,255,0.06);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); background: rgba(0,212,255,0.15); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .alert-header {
+    display: grid;
+    grid-template-columns: 36px 160px 100px 80px 90px 100px 120px 1fr;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border2);
+    gap: 12px;
+    background: var(--bg3);
+  }
+
+  .col-label {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+  }
+
+  .risk-badge {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  .risk-CRITICAL { background: rgba(255,59,92,0.2); color: var(--critical); border: 1px solid rgba(255,59,92,0.4); }
+  .risk-HIGH { background: rgba(255,140,66,0.2); color: var(--high); border: 1px solid rgba(255,140,66,0.4); }
+  .risk-MEDIUM { background: rgba(255,214,0,0.15); color: var(--medium); border: 1px solid rgba(255,214,0,0.4); }
+
+  .score-bar {
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .score-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .acct-id {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan);
+  }
+
+  .acct-name {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .acct-branch {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .amount {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--orange);
+  }
+
+  .time-ago {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .flag-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .flag-tag {
+    background: rgba(255,59,92,0.1);
+    border: 1px solid rgba(255,59,92,0.2);
+    color: #ff8a9e;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .action-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--cyan);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .action-btn:hover {
+    background: rgba(0,212,255,0.1);
+    border-color: var(--cyan);
+  }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+  /* Live feed */
+  .live-feed {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .feed-items { padding: 0; max-height: 320px; overflow-y: auto; }
+
+  .feed-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; background: rgba(0,212,255,0.08); }
+    to { opacity: 1; }
+  }
+
+  .feed-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .feed-icon.alert { background: rgba(255,59,92,0.15); }
+  .feed-icon.network { background: rgba(0,212,255,0.15); }
+  .feed-icon.sar { background: rgba(0,230,118,0.15); }
+  .feed-icon.onboard { background: rgba(255,140,66,0.15); }
+
+  .feed-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .feed-text strong { color: var(--text); }
+  .feed-time { font-size: 10px; color: var(--text3); font-family: 'Space Mono', monospace; margin-top: 2px; }
+
+  /* ===== GRAPH SCREEN ===== */
+  #graphScreen { }
+
+  .graph-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 20px;
+  }
+
+  .graph-container {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #graphCanvas {
+    width: 100%;
+    height: 520px;
+    display: block;
+    cursor: grab;
+  }
+
+  #graphCanvas:active { cursor: grabbing; }
+
+  .graph-legend {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    display: flex;
+    gap: 16px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .graph-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cluster-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .cluster-card:hover, .cluster-card.selected {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.05);
+  }
+
+  .cluster-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .cluster-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .cluster-size {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--red);
+  }
+
+  .cluster-size span {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'Inter', sans-serif;
+  }
+
+  .cluster-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .cluster-stat {
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+
+  .cluster-stat-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--orange);
+  }
+
+  .cluster-stat-label {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .node-tooltip {
+    position: absolute;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    z-index: 10;
+    min-width: 180px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .tooltip-name {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 4px;
+    color: var(--text2);
+  }
+
+  .tooltip-val { color: var(--text); font-family: 'Space Mono', monospace; font-size: 11px; }
+
+  /* ===== DETAIL SCREEN ===== */
+  .detail-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .detail-header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .detail-acct-info { display: flex; align-items: center; gap: 20px; }
+
+  .detail-avatar {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .detail-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .detail-meta {
+    color: var(--text2);
+    font-size: 13px;
+    margin-top: 4px;
+    display: flex;
+    gap: 16px;
+  }
+
+  .detail-meta span { display: flex; align-items: center; gap: 4px; }
+
+  .big-score {
+    text-align: center;
+    background: rgba(255,59,92,0.08);
+    border: 1px solid rgba(255,59,92,0.2);
+    border-radius: 12px;
+    padding: 16px 24px;
+  }
+
+  .big-score-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--red);
+    line-height: 1;
+  }
+
+  .big-score-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* Signals */
+  .signals-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+  }
+
+  .signal-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .signal-icon { font-size: 16px; width: 24px; text-align: center; }
+
+  .signal-info { flex: 1; }
+
+  .signal-name { font-size: 13px; font-weight: 500; }
+
+  .signal-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  .signal-bar-wrap { width: 100px; }
+
+  .signal-bar {
+    height: 6px;
+    background: var(--border2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .signal-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+
+  .signal-score {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    width: 36px;
+    text-align: right;
+  }
+
+  /* SAR */
+  .sar-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    grid-column: 1 / -1;
+  }
+
+  .sar-body {
+    padding: 24px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text2);
+    max-height: 380px;
+    overflow-y: auto;
+  }
+
+  .sar-body h3 {
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    font-size: 15px;
+    margin: 16px 0 8px;
+  }
+
+  .sar-body h3:first-child { margin-top: 0; }
+
+  .sar-body p { margin-bottom: 10px; }
+
+  .sar-body strong { color: var(--cyan); }
+
+  .sar-body .sar-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 12px;
+  }
+
+  .sar-table th {
+    background: var(--bg3);
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--text3);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid var(--border);
+  }
+
+  .sar-table td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    color: var(--text2);
+  }
+
+  .sar-table tr:hover td { background: rgba(0,212,255,0.03); }
+
+  .download-btn {
+    background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+    color: #000;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .download-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* ===== ONBOARDING SCREEN ===== */
+  .onboard-layout {
+    display: grid;
+    grid-template-columns: 480px 1fr;
+    gap: 24px;
+  }
+
+  .form-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .form-group { margin-bottom: 18px; }
+
+  .form-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .form-input:focus, .form-select:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.08);
+  }
+
+  .form-select option { background: var(--bg3); }
+
+  .run-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+    color: #000;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .run-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,212,255,0.25); }
+
+  .result-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+  }
+
+  .result-empty {
+    text-align: center;
+    color: var(--text3);
+  }
+
+  .result-empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .result-empty-text { font-size: 14px; }
+
+  .result-score-ring {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin-bottom: 24px;
+  }
+
+  .result-score-ring svg { transform: rotate(-90deg); }
+
+  .result-score-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .result-score-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .result-score-label {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .result-verdict {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .result-reason {
+    font-size: 12px;
+    color: var(--text2);
+    text-align: center;
+    max-width: 260px;
+    line-height: 1.6;
+  }
+
+  .result-flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    justify-content: center;
+  }
+
+  .result-flag {
+    background: rgba(255,59,92,0.1);
+    border: 1px solid rgba(255,59,92,0.25);
+    color: #ff8a9e;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* Animations */
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .count-animate { animation: countUp 0.4s ease; }
+
+  .generating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--cyan);
+    font-size: 13px;
+    padding: 12px 20px;
+    animation: fadeIn 0.3s;
+  }
+
+  .gen-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--cyan);
+    border-radius: 50%;
+    animation: bounce 0.8s infinite;
+  }
+
+  .gen-dot:nth-child(2) { animation-delay: 0.15s; }
+  .gen-dot:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); opacity: 0.4; }
+    50% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  .pulse-ring {
+    animation: pulseRing 2s infinite;
+  }
+
+  @keyframes pulseRing {
+    0% { box-shadow: 0 0 0 0 rgba(0,212,255,0.3); }
+    70% { box-shadow: 0 0 0 10px rgba(0,212,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,212,255,0); }
+  }
+
+  .network-exposed {
+    background: rgba(0,230,118,0.08);
+    border: 1px solid rgba(0,230,118,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--green);
+  }
+
+  .network-exposed strong {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+  }
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <div class="logo">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-      </div>
-      <div class="logo-text">Net<span>Sentinel</span></div>
-    </div>
-    <div class="topbar-right">
-      <span class="badge-live pulse">● LIVE</span>
-      <span class="bank-label">Indian Overseas Bank — AML Intelligence Platform</span>
-      <span class="topbar-time" id="clock"></span>
-    </div>
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">NS</div>
+    <div class="logo-text">Net<span>Sentinel</span></div>
   </div>
-
-  <!-- NAV -->
-  <div class="nav">
-    <button class="nav-btn active" onclick="showScreen('alerts',this)">🔔 Alert Feed</button>
-    <button class="nav-btn" onclick="showScreen('network',this)">🕸 Network Graph</button>
-    <button class="nav-btn" onclick="showScreen('detail',this)">📋 Account Detail & SAR</button>
-    <button class="nav-btn" onclick="showScreen('onboard',this)">🛡 Onboarding Risk Check</button>
-  </div>
-
-  <div class="content">
-
-    <!-- ══ SCREEN 1: ALERT FEED ══ -->
-    <div class="screen active" id="screen-alerts">
-      <div class="stats-row">
-        <div class="stat-card" style="--accent:#FF3B5C">
-          <div class="stat-label">Active Alerts</div>
-          <div class="stat-val c-red">23</div>
-          <div class="stat-sub">↑ 4 new in last hour</div>
-        </div>
-        <div class="stat-card" style="--accent:#00C2FF">
-          <div class="stat-label">Networks Detected</div>
-          <div class="stat-val c-cyan">6</div>
-          <div class="stat-sub">2 new clusters today</div>
-        </div>
-        <div class="stat-card" style="--accent:#FF6B35">
-          <div class="stat-label">Accounts Exposed</div>
-          <div class="stat-val c-orange">147</div>
-          <div class="stat-sub">Via cascade tracing</div>
-        </div>
-        <div class="stat-card" style="--accent:#06D6A0">
-          <div class="stat-label">SARs Auto-Generated</div>
-          <div class="stat-val c-green">18</div>
-          <div class="stat-sub">Avg 14 min each</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Flagged Accounts — Real-Time Monitor</div>
-        <table class="alert-table">
-          <thead>
-            <tr>
-              <th>Account ID</th>
-              <th>Account Holder</th>
-              <th>Risk Level</th>
-              <th>Risk Score</th>
-              <th>Primary Flag</th>
-              <th>Network ID</th>
-              <th>Detected</th>
-            </tr>
-          </thead>
-          <tbody id="alertBody"></tbody>
-        </table>
-      </div>
+  <div class="header-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE MONITORING
     </div>
-
-    <!-- ══ SCREEN 2: NETWORK GRAPH ══ -->
-    <div class="screen" id="screen-network">
-      <div class="network-summary">
-        <div class="stat-card" style="--accent:#00C2FF; text-align:center">
-          <div class="stat-label">Network Clusters</div>
-          <div class="stat-val c-cyan" style="font-size:32px">6</div>
-          <div class="stat-sub">Active criminal networks</div>
-        </div>
-        <div class="stat-card" style="--accent:#FF6B35; text-align:center">
-          <div class="stat-label">Accounts in Graph</div>
-          <div class="stat-val c-orange" style="font-size:32px">147</div>
-          <div class="stat-sub">Across all clusters</div>
-        </div>
-        <div class="stat-card" style="--accent:#FF3B5C; text-align:center">
-          <div class="stat-label">Total Flow Mapped</div>
-          <div class="stat-val c-red" style="font-size:32px">₹4.2Cr</div>
-          <div class="stat-sub">Illicit funds traced</div>
-        </div>
-      </div>
-
-      <div class="graph-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#FF3B5C"></div>Hub Mule — Kingpin Account</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#FFD166"></div>Feeder Account</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#06D6A0"></div>Payout Account</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#9B5DE5"></div>Newly Flagged via Cascade</div>
-        <div style="margin-left:auto;font-size:12px;color:#6B8BAA">Hover over nodes to inspect</div>
-      </div>
-
-      <div class="graph-wrap">
-        <canvas id="graphCanvas"></canvas>
-        <div id="graphTooltip"></div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Cascade Trace — Network MN-2024-006</div>
-        <p style="font-size:13px;color:#6B8BAA;line-height:1.8">
-          Hub mule account <strong style="color:#FF3B5C">ACC-8821</strong> was confirmed by behavioral analysis.
-          NetSentinel automatically traced the full criminal network — exposing
-          <strong style="color:#E2EAF4">6 feeder accounts</strong> routing ₹2.1 Cr inbound and
-          <strong style="color:#E2EAF4">6 payout accounts</strong> dispersing laundered funds.
-          Full network of <strong style="color:#FF6B35">50 connected accounts</strong> flagged in
-          <strong style="color:#06D6A0">0.8 seconds</strong>.
-          Without NetSentinel, each account would be reviewed individually — taking weeks.
-        </p>
-      </div>
+    <div class="header-stat">
+      <div class="header-stat-val" id="totalAlerts">31</div>
+      <div class="header-stat-label">Active Alerts</div>
     </div>
-
-    <!-- ══ SCREEN 3: ACCOUNT DETAIL + SAR ══ -->
-    <div class="screen" id="screen-detail">
-      <div class="two-col">
-        <!-- LEFT -->
-        <div>
-          <div class="card">
-            <div class="detail-header">
-              <div>
-                <div class="detail-title">ACC-8821 — Rajesh Kumar</div>
-                <div class="detail-sub">Hub Mule · Network MN-2024-006 · IOB Chennai Branch</div>
-              </div>
-              <span class="risk-badge risk-critical">CRITICAL</span>
-            </div>
-            <div class="info-row"><span class="info-key">Account Type</span><span class="info-val">Savings — IOB Chennai</span></div>
-            <div class="info-row"><span class="info-key">Opened</span><span class="info-val">14 Aug 2024</span></div>
-            <div class="info-row"><span class="info-key">Dormant Period</span><span class="info-val c-red">6 months before reactivation</span></div>
-            <div class="info-row"><span class="info-key">Risk Score</span><span class="info-val c-red">94 / 100</span></div>
-            <div class="info-row"><span class="info-key">Inbound (30 days)</span><span class="info-val">₹21,40,000 from 14 senders</span></div>
-            <div class="info-row"><span class="info-key">Outbound (30 days)</span><span class="info-val c-red">₹20,38,000 — 96% passthrough</span></div>
-            <div class="info-row"><span class="info-key">Avg Settlement Time</span><span class="info-val c-red">4.2 hours after receipt</span></div>
-            <div class="info-row"><span class="info-key">Network Role</span><span class="info-val c-red">Hub Mule (Kingpin)</span></div>
-            <div class="info-row"><span class="info-key">Accounts Exposed</span><span class="info-val c-orange">50 via cascade tracing</span></div>
-            <div class="info-row"><span class="info-key">Typology Match</span><span class="info-val c-purple">FATF MT-04</span></div>
-          </div>
-
-          <div class="card">
-            <div class="section-title">Why This Account Was Flagged</div>
-            <div class="explain-box">
-              <div class="explain-label">Explainability Report — Auto Generated by NetSentinel</div>
-              <div class="explain-text">
-                Account ACC-8821 was dormant for 6 months then suddenly received <strong>₹21.4L from 14 different senders</strong> within 30 days of reactivation. <strong>96% of all funds</strong> were transferred out within an average of <strong>4.2 hours</strong> — a classic money mule pass-through pattern. Transaction amounts show round-number CTR structuring (multiple ₹49,000 transfers to stay below the ₹50,000 reporting threshold). Behavioral fingerprint matches <strong>FATF Typology MT-04: Mule Network Hub.</strong>
-              </div>
-            </div>
-            <div style="margin-top:10px">
-              <span class="tag">Dormant reactivation</span>
-              <span class="tag">96% passthrough rate</span>
-              <span class="tag">Round-number structuring</span>
-              <span class="tag">14 inbound senders</span>
-              <span class="tag">Fast settlement (&lt;6 hrs)</span>
-              <span class="tag">FATF MT-04 match</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT -->
-        <div>
-          <div class="card">
-            <div class="detail-header">
-              <div>
-                <div class="detail-title">Auto-Generated SAR Report</div>
-                <div class="detail-sub">FIU-IND Format · Generated in 14 minutes · Awaiting officer review</div>
-              </div>
-              <button class="btn-primary" onclick="alert('SAR-IOB-2024-1847.pdf downloaded!')">⬇ Download SAR</button>
-            </div>
-
-            <div class="sar-header">
-              <div style="width:36px;height:36px;background:#1E3A5F;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📄</div>
-              <div>
-                <div style="font-size:13px;font-weight:600;color:#fff">SAR-IOB-2024-1847</div>
-                <div style="font-size:11px;color:#6B8BAA">Auto-generated · 06 Apr 2026 · NetSentinel AML Engine v1.0</div>
-              </div>
-              <span class="risk-badge risk-critical" style="margin-left:auto">PRIORITY</span>
-            </div>
-
-            <div class="sar-box">
-              <strong>SUSPICIOUS ACTIVITY REPORT</strong><br>
-              Report Ref: SAR-IOB-2024-1847<br>
-              Reporting Institution: Indian Overseas Bank, Chennai<br>
-              Date Generated: 06 Apr 2026 | Time to Generate: 14 minutes<br>
-              <br>
-              <strong>Subject Account Details</strong><br>
-              Account ID: ACC-8821<br>
-              Account Holder: Rajesh Kumar<br>
-              Branch: IOB Chennai — Nungambakkam<br>
-              Period Under Review: 01 Mar – 06 Apr 2026<br>
-              <br>
-              <strong>Nature of Suspicion</strong><br>
-              The subject account displays characteristics consistent with a mule network hub. Significant inbound transactions from 14 distinct sources totalling ₹21,40,000 were received within 30 days of account reactivation after 6 months of dormancy. 96% of funds were transferred outbound within an average settlement window of 4.2 hours. Transaction amounts show structured patterns consistent with CTR avoidance (multiple ₹49,000 transfers). Pattern matches FATF Money Laundering Typology MT-04.<br>
-              <br>
-              <strong>Connected Accounts Flagged via Cascade Tracing</strong><br>
-              Total accounts exposed: 50 across 3 network layers<br>
-              — 6 Feeder accounts: ACC-3347, ACC-4421, ACC-5512, ACC-6634, ACC-7723, ACC-8891<br>
-              — 6 Payout accounts: ACC-1102, ACC-2298, ACC-3387, ACC-4456, ACC-5521, ACC-6671<br>
-              — 38 secondary connections under review<br>
-              <br>
-              <strong>Estimated Illicit Flow</strong><br>
-              Network-wide total: ₹4.2 Crore<br>
-              <br>
-              <strong>Recommended Action</strong><br>
-              1. Freeze account ACC-8821 pending investigation<br>
-              2. Initiate cascade freeze on all 50 connected accounts<br>
-              3. Refer to Enforcement Directorate — flow exceeds ₹1 Crore threshold<br>
-              4. Preserve all transaction records for audit trail<br>
-              <br>
-              <strong>Prepared by:</strong> NetSentinel AML Engine v1.0<br>
-              <strong>Reviewed by:</strong> _________________________ [Officer Signature]<br>
-              <strong>Approved by:</strong> _________________________ [Branch Manager]
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="header-stat">
+      <div class="header-stat-val" style="color:var(--orange)" id="networksDetected">4</div>
+      <div class="header-stat-label">Networks Found</div>
     </div>
-
-    <!-- ══ SCREEN 4: ONBOARDING ══ -->
-    <div class="screen" id="screen-onboard">
-      <div class="two-col">
-        <!-- FORM -->
-        <div class="card">
-          <div class="section-title">New Account Onboarding Risk Check</div>
-          <p style="font-size:12px;color:#6B8BAA;margin-bottom:20px;line-height:1.7">
-            Enter applicant details. NetSentinel scans device fingerprint, ID network linkage, and behavioural signals before the account is activated — stopping mules at the door.
-          </p>
-
-          <div class="form-group">
-            <label class="form-label">Full Name</label>
-            <input class="form-input" id="ob-name" placeholder="Applicant full name" value="Arjun Mehta">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Aadhaar Last 4 Digits</label>
-            <input class="form-input" id="ob-aadhaar" placeholder="XXXX" value="7741">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Mobile Number</label>
-            <input class="form-input" id="ob-mobile" placeholder="10-digit mobile number" value="9876543210">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Account Type</label>
-            <select class="form-select">
-              <option>Savings</option>
-              <option>Current</option>
-              <option>Jan Dhan</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Device Fingerprint Status</label>
-            <select class="form-select" id="ob-device">
-              <option value="clean">Clean — No prior associations</option>
-              <option value="shared">Shared — Used by 3+ applicants recently</option>
-              <option value="flagged">Flagged — Known mule device</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">ID Linked to Suspicious Account Previously?</label>
-            <select class="form-select" id="ob-linked">
-              <option value="no">No — Clean record</option>
-              <option value="yes">Yes — Previously linked</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Referral Source</label>
-            <select class="form-select" id="ob-referral">
-              <option value="normal">Walk-in / Direct</option>
-              <option value="suspicious">Referred by flagged agent</option>
-            </select>
-          </div>
-
-          <button class="btn-primary" onclick="runOnboardCheck()" style="width:100%;padding:13px;font-size:14px;margin-top:4px">
-            Run Risk Check →
-          </button>
-        </div>
-
-        <!-- RESULT -->
-        <div class="card" id="ob-result" style="display:none">
-          <div class="section-title">Risk Assessment Result</div>
-
-          <div style="text-align:center;padding:20px 0 10px">
-            <div class="risk-score-big" id="ob-score-display">--</div>
-            <div style="font-size:12px;color:#6B8BAA;margin-bottom:14px">Risk Score out of 100</div>
-            <div class="risk-verdict" id="ob-verdict"></div>
-          </div>
-
-          <div class="risk-meter">
-            <div class="risk-meter-bar">
-              <div class="risk-meter-needle" id="ob-needle" style="left:0%"></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:#6B8BAA">
-              <span>Low Risk</span><span>Medium</span><span>High</span><span>Critical</span>
-            </div>
-          </div>
-
-          <div id="ob-flags" style="margin-top:16px"></div>
-
-          <div id="ob-action" style="margin-top:14px;padding:14px 16px;border-radius:8px;font-size:13px;line-height:1.8;border-left-width:3px;border-left-style:solid"></div>
-        </div>
-      </div>
+    <div class="header-stat">
+      <div class="header-stat-val" style="color:var(--cyan)" id="amountBlocked">₹2.4Cr</div>
+      <div class="header-stat-label">Blocked Today</div>
     </div>
-
-  </div>
-
-  <!-- FOOTER -->
-  <div class="footer-bar">
-    <span>NetSentinel v1.0 — IOB CyberNova Hackathon 2026</span>
-    <span>Problem Statement 2: Advanced Controls for Mule Account Detection & AML Compliance</span>
-    <span id="footer-clock"></span>
   </div>
 </div>
 
+<div class="nav">
+  <button class="nav-btn active" onclick="showScreen('alertScreen', this)">
+    🚨 Live Alerts <span class="badge" id="alertBadge">31</span>
+  </button>
+  <button class="nav-btn" onclick="showScreen('graphScreen', this)">
+    🕸️ Network Graph
+  </button>
+  <button class="nav-btn" onclick="showScreen('detailScreen', this)">
+    🔍 Account Detail & SAR
+  </button>
+  <button class="nav-btn" onclick="showScreen('onboardScreen', this)">
+    🛡️ Onboarding Risk Check
+  </button>
+</div>
+
+<div class="main">
+
+  <!-- ===== ALERT SCREEN ===== -->
+  <div id="alertScreen" class="screen active">
+    <div class="stats-bar">
+      <div class="stat-card red">
+        <div class="stat-val" id="critCount">8</div>
+        <div class="stat-label">Critical</div>
+        <div class="stat-change">▲ 3 in last hour</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-val" id="highCount">14</div>
+        <div class="stat-label">High Risk</div>
+        <div class="stat-change">▲ 5 in last hour</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-val" id="medCount">9</div>
+        <div class="stat-label">Medium Risk</div>
+        <div class="stat-change">▲ 2 in last hour</div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="stat-val">₹14.7Cr</div>
+        <div class="stat-label">Funds at Risk</div>
+        <div class="stat-change">Across 4 networks</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-val">82%</div>
+        <div class="stat-label">Accuracy</div>
+        <div class="stat-change">↑ from 30% baseline</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="dot"></div>
+            Live Alert Feed — Flagged Accounts
+          </div>
+          <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace" id="lastUpdate">Updated just now</div>
+        </div>
+
+        <div class="alert-header">
+          <div class="col-label">#</div>
+          <div class="col-label">Account</div>
+          <div class="col-label">Risk Level</div>
+          <div class="col-label">Score</div>
+          <div class="col-label">Amount</div>
+          <div class="col-label">Detected</div>
+          <div class="col-label">Flags</div>
+          <div class="col-label">Action</div>
+        </div>
+
+        <div id="alertTableBody" class="alert-table"></div>
+      </div>
+
+      <div class="sidebar">
+        <div class="live-feed">
+          <div class="panel-header">
+            <div class="panel-title"><div class="dot"></div>Activity Stream</div>
+          </div>
+          <div class="feed-items" id="feedItems"></div>
+        </div>
+
+        <div class="panel" style="padding:16px;">
+          <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:12px;">Detection Speed</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <div style="font-size:11px;color:var(--text3);width:80px;">Old System</div>
+            <div style="flex:1;height:20px;background:rgba(255,59,92,0.15);border-radius:4px;display:flex;align-items:center;padding:0 8px;">
+              <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--red);">3–6 WEEKS</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-size:11px;color:var(--text3);width:80px;">NetSentinel</div>
+            <div style="width:30%;height:20px;background:rgba(0,230,118,0.15);border-radius:4px;display:flex;align-items:center;padding:0 8px;border:1px solid rgba(0,230,118,0.3);">
+              <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--green);">&lt; 24 HRS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== GRAPH SCREEN ===== -->
+  <div id="graphScreen" class="screen">
+    <div class="graph-layout">
+      <div class="graph-container">
+        <div class="panel-header">
+          <div class="panel-title"><div class="dot"></div>Transaction Network Map — Cluster Alpha-7</div>
+          <div style="font-size:11px;color:var(--text3);">Hover nodes to inspect · Click to select</div>
+        </div>
+        <canvas id="graphCanvas"></canvas>
+        <div class="graph-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#ff3b5c"></div>Hub Mule</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffd600"></div>Feeder</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00e676"></div>Payout</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#8888aa"></div>Unknown</div>
+        </div>
+        <div class="node-tooltip" id="nodeTooltip"></div>
+      </div>
+
+      <div class="graph-info">
+        <div class="cluster-card selected" onclick="selectCluster(0, this)">
+          <div class="cluster-header">
+            <div>
+              <div class="cluster-name">Cluster Alpha-7</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px;">Detected 6 hrs ago · CRITICAL</div>
+            </div>
+            <div>
+              <div class="cluster-size">18 <span>accounts</span></div>
+            </div>
+          </div>
+          <div class="cluster-stats">
+            <div class="cluster-stat"><div class="cluster-stat-val">₹4.2Cr</div><div class="cluster-stat-label">Total Flow</div></div>
+            <div class="cluster-stat"><div class="cluster-stat-val">94%</div><div class="cluster-stat-label">Passthrough</div></div>
+            <div class="cluster-stat"><div class="cluster-stat-val">3.2 hrs</div><div class="cluster-stat-label">Avg. Hold</div></div>
+            <div class="cluster-stat"><div class="cluster-stat-val">7 states</div><div class="cluster-stat-label">Geo Spread</div></div>
+          </div>
+          <div class="network-exposed">
+            <strong>18</strong>
+            <div>accounts exposed from <strong style="font-family:inherit">1</strong> confirmed lead</div>
+          </div>
+        </div>
+
+        <div class="cluster-card" onclick="selectCluster(1, this)">
+          <div class="cluster-header">
+            <div>
+              <div class="cluster-name">Cluster Beta-3</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px;">Detected 14 hrs ago · HIGH</div>
+            </div>
+            <div class="cluster-size">11 <span>accounts</span></div>
+          </div>
+          <div class="cluster-stats">
+            <div class="cluster-stat"><div class="cluster-stat-val">₹1.8Cr</div><div class="cluster-stat-label">Total Flow</div></div>
+            <div class="cluster-stat"><div class="cluster-stat-val">87%</div><div class="cluster-stat-label">Passthrough</div></div>
+          </div>
+        </div>
+
+        <div class="cluster-card" onclick="selectCluster(2, this)">
+          <div class="cluster-header">
+            <div>
+              <div class="cluster-name">Cluster Gamma-1</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px;">Detected 2 days ago · HIGH</div>
+            </div>
+            <div class="cluster-size">9 <span>accounts</span></div>
+          </div>
+          <div class="cluster-stats">
+            <div class="cluster-stat"><div class="cluster-stat-val">₹92L</div><div class="cluster-stat-label">Total Flow</div></div>
+            <div class="cluster-stat"><div class="cluster-stat-val">79%</div><div class="cluster-stat-label">Passthrough</div></div>
+          </div>
+        </div>
+
+        <button class="download-btn" onclick="showScreen('detailScreen', document.querySelectorAll('.nav-btn')[2])">
+          📋 View Full SAR for Alpha-7
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DETAIL SCREEN ===== -->
+  <div id="detailScreen" class="screen">
+    <div class="detail-layout">
+      <div class="detail-header-card">
+        <div class="detail-acct-info">
+          <div class="detail-avatar">RK</div>
+          <div>
+            <div class="detail-name">Rajesh Kumar Sharma</div>
+            <div class="detail-meta">
+              <span>🏦 IOB/Chennai-Adyar</span>
+              <span>📋 A/C: 5892-0047-3812</span>
+              <span>📅 Opened: 14 Jan 2024</span>
+              <span>⚠️ Cluster Alpha-7 — Hub Mule</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <div class="big-score pulse-ring">
+            <div class="big-score-val">94</div>
+            <div class="big-score-label">Risk Score</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="risk-badge risk-CRITICAL" style="font-size:14px;padding:8px 20px;">CRITICAL</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:8px;">Flagged 6 hrs ago</div>
+            <div style="font-size:11px;color:var(--text3);">₹4.2Cr total flow</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🔍 Behavioral Signal Analysis</div>
+          <div style="font-size:11px;color:var(--green);">Explainability Report</div>
+        </div>
+        <div class="signals-grid" id="signalsGrid"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">📊 Transaction Timeline</div>
+        </div>
+        <div style="padding:20px;">
+          <table class="sar-table" style="width:100%">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Counterparty</th>
+                <th>Flag</th>
+              </tr>
+            </thead>
+            <tbody id="txnTimeline"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sar-panel">
+        <div class="panel-header">
+          <div class="panel-title">📄 Auto-Generated Suspicious Activity Report (SAR)</div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="font-size:11px;color:var(--green);font-family:'Space Mono',monospace;">⏱ Generated in 14 min</div>
+            <div style="font-size:11px;color:var(--text3);">vs 6 hrs manual</div>
+            <button class="download-btn" onclick="downloadSAR()" id="downloadBtn">
+              ⬇ Download SAR (PDF)
+            </button>
+          </div>
+        </div>
+        <div class="sar-body" id="sarBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ONBOARDING SCREEN ===== -->
+  <div id="onboardScreen" class="screen">
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;">Layer 00 — Onboarding Risk Guard</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px;">Screen accounts before activation using behavioral + network intelligence</div>
+    </div>
+    <div class="onboard-layout">
+      <div class="form-panel">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:20px;">New Account Application</div>
+
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" id="f_name" value="Ravi Shankar Verma" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Aadhaar Number (last 4)</label>
+          <input class="form-input" id="f_aadhaar" value="7823" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Device Fingerprint</label>
+          <select class="form-select" id="f_device">
+            <option value="clean">Unique device — first time</option>
+            <option value="flagged">Device linked to 3 flagged accounts</option>
+            <option value="shared">Device shared across 7 applications</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">IP / Location</label>
+          <select class="form-select" id="f_ip">
+            <option value="clean">Chennai — matches address</option>
+            <option value="mismatch">Mumbai IP — address says rural Bihar</option>
+            <option value="vpn">VPN detected — location masked</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ID Document Pattern</label>
+          <select class="form-select" id="f_doc">
+            <option value="clean">Genuine — no anomalies</option>
+            <option value="template">Template match — possible forgery</option>
+            <option value="mismatch">Photo metadata mismatch</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Network Proximity to Known Mules</label>
+          <select class="form-select" id="f_network">
+            <option value="clean">No connections found</option>
+            <option value="1hop">1 hop from flagged account</option>
+            <option value="direct">Direct link to confirmed mule</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Purpose</label>
+          <select class="form-select" id="f_purpose">
+            <option value="savings">Personal Savings</option>
+            <option value="salary">Salary Account</option>
+            <option value="business">Business — unverified</option>
+          </select>
+        </div>
+
+        <button class="run-btn" onclick="runOnboardingCheck()">⚡ Run Risk Assessment</button>
+      </div>
+
+      <div class="result-panel" id="onboardResult">
+        <div class="result-empty">
+          <div class="result-empty-icon">🛡️</div>
+          <div class="result-empty-text">Fill in the form and run assessment<br>to see the risk score</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <script>
-// ── CLOCK ─────────────────────────────────────────
-function updateClock() {
-  const now = new Date();
-  const t = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const d = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  document.getElementById('clock').textContent = d + ' · ' + t;
-  document.getElementById('footer-clock').textContent = t;
-}
-setInterval(updateClock, 1000); updateClock();
-
-// ── SCREEN SWITCHER ───────────────────────────────
-function showScreen(id, btn) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
-  if (btn) btn.classList.add('active');
-  if (id === 'network') setTimeout(drawGraph, 100);
-}
-
-// ── ALERT DATA ────────────────────────────────────
+// ===================== DATA =====================
 const alerts = [
-  { id:'ACC-8821', name:'Rajesh Kumar',   risk:'critical', score:94, reason:'Hub mule — 96% passthrough, 14 senders', net:'MN-2024-006', time:'2 min ago' },
-  { id:'ACC-3347', name:'Dinesh Pillai',  risk:'critical', score:91, reason:'Feeder — large inbound from 11 sources',  net:'MN-2024-006', time:'8 min ago' },
-  { id:'ACC-5512', name:'Anita Menon',    risk:'high',     score:78, reason:'Dormant reactivation + structuring',      net:'MN-2024-011', time:'23 min ago' },
-  { id:'ACC-7723', name:'Ravi Shankar',   risk:'high',     score:74, reason:'Round-number CTR structuring pattern',    net:'MN-2024-006', time:'41 min ago' },
-  { id:'ACC-2298', name:'Kavya Lakshmi',  risk:'medium',   score:58, reason:'Transaction velocity 8x monthly avg',    net:'MN-2024-014', time:'1 hr ago' },
-  { id:'ACC-9901', name:'Suresh Thiagaraj',risk:'medium',  score:52, reason:'New account — unusually high volume',    net:'MN-2024-011', time:'2 hr ago' },
-  { id:'ACC-4456', name:'Meena Rajendran',risk:'monitor',  score:31, reason:'Slight income vs movement mismatch',     net:'—',           time:'3 hr ago' },
-  { id:'ACC-6634', name:'Vikram Anand',   risk:'monitor',  score:28, reason:'Device shared across 2 accounts',        net:'—',           time:'4 hr ago' },
+  { id:'IOB-2847', name:'Rajesh Kumar Sharma', branch:'Chennai-Adyar', risk:'CRITICAL', score:94, amount:'₹4.2Cr', time:'6 min ago', flags:['PASSTHROUGH','DORMANT','NETWORK'], cluster:'Alpha-7' },
+  { id:'IOB-3012', name:'Priya Venkataraman', branch:'Mumbai-Andheri', risk:'CRITICAL', score:91, amount:'₹3.1Cr', time:'18 min ago', flags:['HUB-MULE','GEO-DISPERSION'], cluster:'Beta-3' },
+  { id:'IOB-1934', name:'Mohammed Farooq Ahmed', branch:'Hyderabad-Banjara', risk:'CRITICAL', score:88, amount:'₹2.8Cr', time:'31 min ago', flags:['STRUCTURING','VELOCITY'], cluster:'Alpha-7' },
+  { id:'IOB-4421', name:'Suresh Babu Nair', branch:'Kochi-Ernakulam', risk:'CRITICAL', score:86, amount:'₹1.9Cr', time:'45 min ago', flags:['ROUND-NUMBERS','PASSTHROUGH'], cluster:'Alpha-7' },
+  { id:'IOB-2203', name:'Kavitha Sundaram', branch:'Coimbatore-RS Puram', risk:'CRITICAL', score:85, amount:'₹87L', time:'1 hr ago', flags:['DORMANT','NETWORK'], cluster:'Beta-3' },
+  { id:'IOB-5509', name:'Arun Prakash Iyer', branch:'Chennai-T Nagar', risk:'CRITICAL', score:83, amount:'₹1.2Cr', time:'1.2 hrs ago', flags:['VELOCITY','HUB-MULE'], cluster:'Gamma-1' },
+  { id:'IOB-6678', name:'Deepa Krishnamurthy', branch:'Bengaluru-Jayanagar', risk:'CRITICAL', score:81, amount:'₹65L', time:'1.5 hrs ago', flags:['STRUCTURING','GEO'], cluster:'Alpha-7' },
+  { id:'IOB-7891', name:'Ravi Shankar Pillai', branch:'Trivandrum-Palayam', risk:'CRITICAL', score:80, amount:'₹43L', time:'2 hrs ago', flags:['PASSTHROUGH'], cluster:'Beta-3' },
+  { id:'IOB-3345', name:'Anitha Balasubramanian', branch:'Chennai-Velachery', risk:'HIGH', score:77, amount:'₹2.1Cr', time:'2.3 hrs ago', flags:['NETWORK','DORMANT'], cluster:'Alpha-7' },
+  { id:'IOB-8823', name:'Vikram Singh Yadav', branch:'Delhi-Karol Bagh', risk:'HIGH', score:74, amount:'₹58L', time:'2.8 hrs ago', flags:['VELOCITY','ROUND'], cluster:'Beta-3' },
+  { id:'IOB-9102', name:'Meenakshi Raghavan', branch:'Madurai-Anna Nagar', risk:'HIGH', score:72, amount:'₹34L', time:'3 hrs ago', flags:['GEO-DISPERSION'], cluster:'Gamma-1' },
+  { id:'IOB-1156', name:'Gopal Krishnan Menon', branch:'Kozhikode-Calicut', risk:'HIGH', score:70, amount:'₹1.4Cr', time:'3.5 hrs ago', flags:['STRUCTURING'], cluster:'Alpha-7' },
 ];
 
-function renderAlerts() {
-  const barColors = { critical:'#FF3B5C', high:'#FF6B35', medium:'#FFD166', monitor:'#6B8BAA' };
-  document.getElementById('alertBody').innerHTML = alerts.map(a => `
-    <tr class="data-row" onclick="showScreen('detail', document.querySelector('.nav-btn:nth-child(3)'))">
-      <td style="color:#00C2FF;font-family:monospace;font-weight:600">${a.id}</td>
-      <td style="font-weight:500">${a.name}</td>
-      <td><span class="risk-badge risk-${a.risk}">${a.risk.toUpperCase()}</span></td>
-      <td>
-        <div class="score-bar-wrap">
-          <div class="score-bar-bg">
-            <div class="score-bar-fill" style="width:${a.score}%;background:${barColors[a.risk]}"></div>
-          </div>
-          <span style="font-size:12px;font-weight:600;min-width:26px;color:${barColors[a.risk]}">${a.score}</span>
-        </div>
-      </td>
-      <td style="color:#6B8BAA;font-size:12px">${a.reason}</td>
-      <td style="color:#9B5DE5;font-size:12px;font-family:monospace">${a.net}</td>
-      <td style="color:#6B8BAA;font-size:12px">${a.time}</td>
-    </tr>`).join('');
+const feedMessages = [
+  { icon:'alert', emoji:'🚨', text:'<strong>CRITICAL alert</strong> raised — IOB-2847 · ₹4.2Cr passthrough detected', time:'2 min ago' },
+  { icon:'network', emoji:'🕸️', text:'<strong>Network cascade</strong> — Alpha-7 expanded to <strong>18 accounts</strong>', time:'6 min ago' },
+  { icon:'sar', emoji:'📄', text:'<strong>Auto-SAR generated</strong> for IOB-3012 in <strong>14 minutes</strong>', time:'12 min ago' },
+  { icon:'onboard', emoji:'🛡️', text:'<strong>Onboarding blocked</strong> — Device linked to 3 flagged accounts', time:'18 min ago' },
+  { icon:'alert', emoji:'🚨', text:'<strong>Hub mule identified</strong> — IOB-1934 · Hyderabad-Banjara Branch', time:'31 min ago' },
+  { icon:'network', emoji:'🕸️', text:'<strong>Cluster Beta-3</strong> confirmed — 11 accounts, ₹1.8Cr at risk', time:'45 min ago' },
+  { icon:'sar', emoji:'📄', text:'<strong>SAR submitted</strong> to FIU-IND — Cluster Gamma-1 · Ref: SAR-2024-0892', time:'1.2 hrs ago' },
+];
+
+// ===================== ALERT TABLE =====================
+function renderAlerts(data) {
+  const body = document.getElementById('alertTableBody');
+  body.innerHTML = data.map((a, i) => `
+    <div class="alert-row" onclick="openDetail('${a.id}')">
+      <div style="color:var(--text3);font-family:'Space Mono',monospace;font-size:11px">${String(i+1).padStart(2,'0')}</div>
+      <div>
+        <div class="acct-id">${a.id}</div>
+        <div class="acct-name">${a.name}</div>
+        <div class="acct-branch">${a.branch}</div>
+      </div>
+      <div><span class="risk-badge risk-${a.risk}">${a.risk}</span></div>
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:${a.score>85?'var(--red)':a.score>70?'var(--orange)':'var(--yellow)'}">${a.score}</div>
+        <div class="score-bar"><div class="score-fill" style="width:${a.score}%;background:${a.score>85?'var(--red)':a.score>70?'var(--orange)':'var(--yellow)'}"></div></div>
+      </div>
+      <div class="amount">${a.amount}</div>
+      <div class="time-ago">${a.time}</div>
+      <div class="flag-tags">${a.flags.map(f=>`<span class="flag-tag">${f}</span>`).join('')}</div>
+      <div><button class="action-btn" onclick="event.stopPropagation();openDetail('${a.id}')">Investigate →</button></div>
+    </div>
+  `).join('');
 }
-renderAlerts();
 
-// ── GRAPH ─────────────────────────────────────────
-function drawGraph() {
-  const canvas = document.getElementById('graphCanvas');
-  const wrap = canvas.parentElement;
-  canvas.width = wrap.offsetWidth;
-  canvas.height = wrap.offsetHeight;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0, 0, W, H);
+function renderFeed(items) {
+  const container = document.getElementById('feedItems');
+  container.innerHTML = items.map(f => `
+    <div class="feed-item">
+      <div class="feed-icon ${f.icon}">${f.emoji}</div>
+      <div>
+        <div class="feed-text">${f.text}</div>
+        <div class="feed-time">${f.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
 
-  const hub = { x:W*0.5, y:H*0.48, r:30, color:'#FF3B5C', label:'ACC-8821', sub:'Hub Mule', type:'hub' };
+// ===================== LIVE SIMULATION =====================
+let alertCount = 31;
+let simulationIdx = 0;
 
-  const feeders = [
-    {x:W*0.14,y:H*0.2},{x:W*0.07,y:H*0.5},{x:W*0.16,y:H*0.8},
-    {x:W*0.3,y:H*0.1},{x:W*0.32,y:H*0.88},{x:W*0.22,y:H*0.62},
-  ].map((p,i) => ({...p, r:18, color:'#FFD166', label:`F-${i+1}`, type:'feeder',
-    amount:`₹${(Math.random()*3+0.5).toFixed(1)}L`}));
+const liveAlerts = [
+  { id:'IOB-'+(Math.floor(Math.random()*9000)+1000), name:'Santhosh Kumar R', branch:'Salem-Town', risk:'HIGH', score:76, amount:'₹28L', flags:['DORMANT','NETWORK'], cluster:'Alpha-7' },
+  { id:'IOB-'+(Math.floor(Math.random()*9000)+1000), name:'Fatima Noor Begum', branch:'Lucknow-Hazratganj', risk:'CRITICAL', score:89, amount:'₹1.1Cr', flags:['VELOCITY','HUB-MULE'], cluster:'Beta-3' },
+  { id:'IOB-'+(Math.floor(Math.random()*9000)+1000), name:'Harish Babu Sharma', branch:'Jaipur-Vaishali Nagar', risk:'HIGH', score:73, amount:'₹46L', flags:['STRUCTURING'], cluster:'Gamma-1' },
+];
 
-  const payouts = [
-    {x:W*0.82,y:H*0.17},{x:W*0.92,y:H*0.45},{x:W*0.8,y:H*0.76},
-    {x:W*0.68,y:H*0.12},{x:W*0.7,y:H*0.86},{x:W*0.88,y:H*0.68},
-  ].map((p,i) => ({...p, r:18, color:'#06D6A0', label:`P-${i+1}`, type:'payout',
-    amount:`₹${(Math.random()*1.5+0.2).toFixed(1)}L`}));
+function simulateLiveTransaction() {
+  const newAlert = { ...liveAlerts[simulationIdx % liveAlerts.length], time: 'just now' };
+  simulationIdx++;
+  alertCount++;
 
-  const newNode = { x:W*0.63, y:H*0.28, r:15, color:'#9B5DE5', label:'NEW', type:'new' };
+  // Update header
+  document.getElementById('totalAlerts').textContent = alertCount;
+  document.getElementById('alertBadge').textContent = alertCount;
+  document.getElementById('totalAlerts').className = 'header-stat-val count-animate';
 
-  // Draw edges
-  feeders.forEach(f => {
-    ctx.beginPath();
-    ctx.strokeStyle = '#FFD166'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.35;
-    ctx.setLineDash([]);
-    ctx.moveTo(f.x, f.y); ctx.lineTo(hub.x, hub.y); ctx.stroke();
-    ctx.globalAlpha = 1;
-  });
-  payouts.forEach(p => {
-    ctx.beginPath();
-    ctx.strokeStyle = '#06D6A0'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.35;
-    ctx.moveTo(hub.x, hub.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-    ctx.globalAlpha = 1;
-  });
-  ctx.beginPath();
-  ctx.strokeStyle = '#9B5DE5'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
-  ctx.setLineDash([5,4]);
-  ctx.moveTo(hub.x, hub.y); ctx.lineTo(newNode.x, newNode.y); ctx.stroke();
-  ctx.globalAlpha = 1; ctx.setLineDash([]);
+  // Add to top of alerts
+  const body = document.getElementById('alertTableBody');
+  const newRow = document.createElement('div');
+  newRow.className = 'alert-row new-alert';
+  newRow.innerHTML = `
+    <div style="color:var(--text3);font-family:'Space Mono',monospace;font-size:11px">NEW</div>
+    <div>
+      <div class="acct-id">${newAlert.id}</div>
+      <div class="acct-name">${newAlert.name}</div>
+      <div class="acct-branch">${newAlert.branch}</div>
+    </div>
+    <div><span class="risk-badge risk-${newAlert.risk}">${newAlert.risk}</span></div>
+    <div>
+      <div style="font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:${newAlert.score>85?'var(--red)':'var(--orange)'}">${newAlert.score}</div>
+      <div class="score-bar"><div class="score-fill" style="width:${newAlert.score}%;background:${newAlert.score>85?'var(--red)':'var(--orange)'}"></div></div>
+    </div>
+    <div class="amount">${newAlert.amount}</div>
+    <div class="time-ago">${newAlert.time}</div>
+    <div class="flag-tags">${newAlert.flags.map(f=>`<span class="flag-tag">${f}</span>`).join('')}</div>
+    <div><button class="action-btn">Investigate →</button></div>
+  `;
+  body.insertBefore(newRow, body.firstChild);
 
-  // Draw nodes
-  function drawNode(n) {
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, n.r+4, 0, Math.PI*2);
-    ctx.fillStyle = n.color + '18'; ctx.fill();
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
-    ctx.fillStyle = n.color + '28'; ctx.fill();
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
-    ctx.strokeStyle = n.color; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = n.color;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    if (n.sub) {
-      ctx.font = `700 10px -apple-system,sans-serif`;
-      ctx.fillText(n.label, n.x, n.y - 6);
-      ctx.font = `400 8px -apple-system,sans-serif`;
-      ctx.fillText(n.sub, n.x, n.y + 6);
-    } else {
-      ctx.font = `600 ${n.r < 20 ? 9 : 10}px -apple-system,sans-serif`;
-      ctx.fillText(n.label, n.x, n.y);
-    }
+  // Add to feed
+  const feed = document.getElementById('feedItems');
+  const feedItem = document.createElement('div');
+  feedItem.className = 'feed-item';
+  feedItem.innerHTML = `
+    <div class="feed-icon alert">🚨</div>
+    <div>
+      <div class="feed-text"><strong>New ${newAlert.risk} alert</strong> — ${newAlert.id} · ${newAlert.amount} flagged</div>
+      <div class="feed-time">just now</div>
+    </div>
+  `;
+  feed.insertBefore(feedItem, feed.firstChild);
+
+  document.getElementById('lastUpdate').textContent = 'Updated just now';
+  setTimeout(() => {
+    document.getElementById('lastUpdate').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  }, 3000);
+}
+
+setInterval(simulateLiveTransaction, 8000);
+
+// ===================== GRAPH =====================
+const clusters = [
+  {
+    nodes: [
+      { id:'hub', label:'IOB-2847', role:'hub', x:0, y:0, amount:'₹4.2Cr', score:94, name:'Rajesh Kumar' },
+      { id:'f1', label:'IOB-3012', role:'feeder', x:-180, y:-100, amount:'₹1.1Cr', score:91, name:'Priya V.' },
+      { id:'f2', label:'IOB-1934', role:'feeder', x:180, y:-100, amount:'₹87L', score:88, name:'M. Farooq' },
+      { id:'f3', label:'IOB-5509', role:'feeder', x:-200, y:80, amount:'₹65L', score:83, name:'Arun P.' },
+      { id:'f4', label:'IOB-6678', role:'feeder', x:200, y:80, amount:'₹43L', score:81, name:'Deepa K.' },
+      { id:'f5', label:'IOB-3345', role:'feeder', x:0, y:-180, amount:'₹38L', score:77, name:'Anitha B.' },
+      { id:'p1', label:'IOB-7001', role:'payout', x:-280, y:-200, amount:'₹52L', score:62, name:'Unknown A' },
+      { id:'p2', label:'IOB-7002', role:'payout', x:280, y:-200, amount:'₹48L', score:58, name:'Unknown B' },
+      { id:'p3', label:'IOB-7003', role:'payout', x:-320, y:40, amount:'₹31L', score:55, name:'Unknown C' },
+      { id:'p4', label:'IOB-7004', role:'payout', x:320, y:40, amount:'₹44L', score:60, name:'Unknown D' },
+      { id:'p5', label:'IOB-7005', role:'payout', x:-160, y:200, amount:'₹29L', score:53, name:'Unknown E' },
+      { id:'p6', label:'IOB-7006', role:'payout', x:160, y:200, amount:'₹37L', score:57, name:'Unknown F' },
+      { id:'p7', label:'IOB-7007', role:'payout', x:0, y:240, amount:'₹22L', score:51, name:'Unknown G' },
+    ],
+    edges: [
+      {from:'f1',to:'hub'},{from:'f2',to:'hub'},{from:'f3',to:'hub'},{from:'f4',to:'hub'},{from:'f5',to:'hub'},
+      {from:'hub',to:'p1'},{from:'hub',to:'p2'},{from:'hub',to:'p3'},{from:'hub',to:'p4'},{from:'hub',to:'p5'},{from:'hub',to:'p6'},{from:'hub',to:'p7'},
+    ]
+  },
+  {
+    nodes: [
+      { id:'hub', label:'IOB-3012', role:'hub', x:0, y:0, amount:'₹1.8Cr', score:91, name:'Priya Venk.' },
+      { id:'f1', label:'IOB-8823', role:'feeder', x:-150, y:-100, amount:'₹58L', score:74, name:'Vikram S.' },
+      { id:'f2', label:'IOB-2203', role:'feeder', x:150, y:-100, amount:'₹87L', score:85, name:'Kavitha S.' },
+      { id:'f3', label:'IOB-7891', role:'feeder', x:0, y:-160, amount:'₹43L', score:80, name:'Ravi P.' },
+      { id:'p1', label:'IOB-8001', role:'payout', x:-220, y:80, amount:'₹44L', score:52, name:'Unknown X' },
+      { id:'p2', label:'IOB-8002', role:'payout', x:0, y:160, amount:'₹38L', score:49, name:'Unknown Y' },
+      { id:'p3', label:'IOB-8003', role:'payout', x:220, y:80, amount:'₹51L', score:55, name:'Unknown Z' },
+    ],
+    edges: [{from:'f1',to:'hub'},{from:'f2',to:'hub'},{from:'f3',to:'hub'},{from:'hub',to:'p1'},{from:'hub',to:'p2'},{from:'hub',to:'p3'}]
+  },
+  {
+    nodes: [
+      { id:'hub', label:'IOB-5509', role:'hub', x:0, y:0, amount:'₹92L', score:83, name:'Arun P. Iyer' },
+      { id:'f1', label:'IOB-9102', role:'feeder', x:-140, y:-90, amount:'₹34L', score:72, name:'Meenakshi R.' },
+      { id:'f2', label:'IOB-1156', role:'feeder', x:140, y:-90, amount:'₹44L', score:70, name:'Gopal K.' },
+      { id:'p1', label:'IOB-9001', role:'payout', x:-180, y:80, amount:'₹28L', score:48, name:'Unknown P' },
+      { id:'p2', label:'IOB-9002', role:'payout', x:180, y:80, amount:'₹33L', score:51, name:'Unknown Q' },
+    ],
+    edges: [{from:'f1',to:'hub'},{from:'f2',to:'hub'},{from:'hub',to:'p1'},{from:'hub',to:'p2'}]
   }
+];
 
-  [...feeders, ...payouts].forEach(drawNode);
-  drawNode(newNode); drawNode(hub);
+let currentCluster = 0;
+let hoveredNode = null;
+let animFrame = 0;
 
-  ctx.font = '12px -apple-system,sans-serif';
-  ctx.fillStyle = '#1E3A5F'; ctx.textAlign = 'left';
-  ctx.fillText('Network MN-2024-006 — Hover nodes to inspect', 16, H - 16);
+function selectCluster(idx, el) {
+  currentCluster = idx;
+  document.querySelectorAll('.cluster-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  drawGraph();
+}
 
-  // Tooltip
-  const tooltip = document.getElementById('graphTooltip');
-  const allNodes = [hub, ...feeders, ...payouts, newNode];
-  canvas.onmousemove = (e) => {
-    const r = canvas.getBoundingClientRect();
-    const mx = (e.clientX - r.left) * (canvas.width / r.width);
-    const my = (e.clientY - r.top) * (canvas.height / r.height);
+function initGraph() {
+  const canvas = document.getElementById('graphCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 520;
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const cx = canvas.width/2, cy = canvas.height/2;
+
+    const cluster = clusters[currentCluster];
     let hit = null;
-    for (const n of allNodes) {
-      if (Math.hypot(mx - n.x, my - n.y) < n.r + 8) { hit = n; break; }
-    }
+    cluster.nodes.forEach(n => {
+      const nx = cx + n.x * 0.7;
+      const ny = cy + n.y * 0.7;
+      const r = n.role === 'hub' ? 28 : n.role === 'feeder' ? 20 : 16;
+      const dist = Math.sqrt((mx-nx)**2 + (my-ny)**2);
+      if (dist < r) hit = { node: n, x: nx, y: ny };
+    });
+
+    hoveredNode = hit ? hit.node : null;
+    const tooltip = document.getElementById('nodeTooltip');
     if (hit) {
-      const info = {
-        hub: `<strong style="color:#FF3B5C">HUB MULE — CRITICAL</strong><br>Account: ACC-8821<br>Risk Score: 94/100<br>Inbound: ₹21.4L from 14 senders<br>Passthrough: 96%<br>Exposes: 50 accounts`,
-        feeder: `<strong style="color:#FFD166">FEEDER ACCOUNT</strong><br>Routes funds into hub<br>Risk Score: ${Math.floor(62+Math.random()*20)}/100<br>Monthly flow: ${hit.amount || '₹1.2L'}`,
-        payout: `<strong style="color:#06D6A0">PAYOUT ACCOUNT</strong><br>Receives laundered funds<br>Risk Score: ${Math.floor(55+Math.random()*18)}/100<br>Received: ${hit.amount || '₹0.8L'}`,
-        new: `<strong style="color:#9B5DE5">NEWLY FLAGGED</strong><br>Detected via cascade tracing<br>Under investigation<br>Connected to hub mule`
-      };
-      tooltip.innerHTML = info[hit.type] || '';
       tooltip.style.display = 'block';
-      tooltip.style.left = (e.offsetX + 16) + 'px';
-      tooltip.style.top = Math.max(10, e.offsetY - 20) + 'px';
+      tooltip.style.left = (hit.x + 20) + 'px';
+      tooltip.style.top = (hit.y - 10) + 'px';
+      tooltip.innerHTML = `
+        <div class="tooltip-name">${hit.node.name}</div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">${hit.node.label} · ${hit.node.role.toUpperCase()}</div>
+        <div class="tooltip-row"><span>Amount</span><span class="tooltip-val">${hit.node.amount}</span></div>
+        <div class="tooltip-row"><span>Risk Score</span><span class="tooltip-val" style="color:${hit.node.score>85?'var(--red)':hit.node.score>70?'var(--orange)':'var(--yellow)'}">${hit.node.score}/100</span></div>
+        <div class="tooltip-row"><span>Role</span><span class="tooltip-val">${hit.node.role === 'hub' ? '⚠️ Hub Mule' : hit.node.role === 'feeder' ? '↗ Feeder' : '↘ Payout'}</span></div>
+      `;
     } else {
       tooltip.style.display = 'none';
     }
-  };
-  canvas.onmouseleave = () => { tooltip.style.display = 'none'; };
+    drawGraph();
+  });
+
+  drawGraph();
 }
 
-// ── ONBOARDING CHECK ──────────────────────────────
-function runOnboardCheck() {
-  const device = document.getElementById('ob-device').value;
-  const linked = document.getElementById('ob-linked').value;
-  const referral = document.getElementById('ob-referral').value;
+function drawGraph() {
+  const canvas = document.getElementById('graphCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const cluster = clusters[currentCluster];
 
-  let score = 12;
-  const flags = [];
+  ctx.clearRect(0, 0, W, H);
 
-  if (device === 'shared')   { score += 30; flags.push({ t:'Device used by 3+ applicants recently — suspicious pattern', c:'#FFD166' }); }
-  if (device === 'flagged')  { score += 55; flags.push({ t:'Device fingerprint matches known mule device in database', c:'#FF3B5C' }); }
-  if (linked === 'yes')      { score += 30; flags.push({ t:'Aadhaar previously linked to a flagged suspicious account', c:'#FF3B5C' }); }
-  if (referral === 'suspicious') { score += 18; flags.push({ t:'Referred by an agent with prior fraud associations', c:'#FF6B35' }); }
-  score = Math.min(score, 98);
+  // Background
+  ctx.fillStyle = '#080d1a';
+  ctx.fillRect(0, 0, W, H);
 
-  const result = document.getElementById('ob-result');
-  result.style.display = 'block';
-  result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Grid
+  ctx.strokeStyle = 'rgba(0,212,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
 
-  const scoreEl = document.getElementById('ob-score-display');
-  scoreEl.textContent = score;
+  const getPos = n => ({ x: cx + n.x * 0.7, y: cy + n.y * 0.7 });
+  const nodeMap = {};
+  cluster.nodes.forEach(n => nodeMap[n.id] = n);
+
+  // Draw edges with animation
+  animFrame = (animFrame + 1) % 60;
+  cluster.edges.forEach(e => {
+    const from = getPos(nodeMap[e.from]);
+    const to = getPos(nodeMap[e.to]);
+
+    // Edge line
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.strokeStyle = 'rgba(0,212,255,0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Animated dot on edge
+    const t = ((animFrame / 60) + Math.random() * 0.001) % 1;
+    const px = from.x + (to.x - from.x) * t;
+    const py = from.y + (to.y - from.y) * t;
+    ctx.beginPath();
+    ctx.arc(px, py, 2.5, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,212,255,0.7)';
+    ctx.fill();
+
+    // Arrow
+    const angle = Math.atan2(to.y-from.y, to.x-from.x);
+    const arrowX = to.x - Math.cos(angle)*28;
+    const arrowY = to.y - Math.sin(angle)*28;
+    ctx.beginPath();
+    ctx.moveTo(arrowX, arrowY);
+    ctx.lineTo(arrowX - 8*Math.cos(angle-0.4), arrowY - 8*Math.sin(angle-0.4));
+    ctx.lineTo(arrowX - 8*Math.cos(angle+0.4), arrowY - 8*Math.sin(angle+0.4));
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0,212,255,0.4)';
+    ctx.fill();
+  });
+
+  // Draw nodes
+  cluster.nodes.forEach(n => {
+    const pos = getPos(n);
+    const r = n.role === 'hub' ? 28 : n.role === 'feeder' ? 20 : 16;
+    const isHovered = hoveredNode && hoveredNode.id === n.id;
+    const color = n.role === 'hub' ? '#ff3b5c' : n.role === 'feeder' ? '#ffd600' : '#00e676';
+
+    // Glow
+    const grd = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, r * (isHovered ? 3 : 2));
+    grd.addColorStop(0, color + '40');
+    grd.addColorStop(1, color + '00');
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, r * (isHovered ? 3 : 2), 0, Math.PI*2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    // Hub pulsing ring
+    if (n.role === 'hub') {
+      const pulse = Math.sin(animFrame * 0.2) * 0.5 + 0.5;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, r + 8 + pulse*6, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(255,59,92,${0.2 + pulse*0.2})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // Node circle
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, r, 0, Math.PI*2);
+    ctx.fillStyle = isHovered ? color : color + 'cc';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = isHovered ? 3 : 1.5;
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = n.role === 'hub' ? '#fff' : '#000';
+    ctx.font = `bold ${n.role === 'hub' ? 9 : 8}px Space Mono, monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(n.label.split('-')[1], pos.x, pos.y);
+
+    // Amount below
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '9px Inter, sans-serif';
+    ctx.fillText(n.amount, pos.x, pos.y + r + 12);
+  });
+
+  requestAnimationFrame(drawGraph);
+}
+
+// ===================== DETAIL / SAR =====================
+// ===================== PER-ACCOUNT DETAIL DATA =====================
+const accountProfiles = {
+  'IOB-2847': {
+    name:'Rajesh Kumar Sharma', initials:'RK', branch:'IOB Chennai-Adyar', acctNo:'5892-0047-3812',
+    opened:'January 14, 2024', pan:'ABCRS1234D', aadhaar:'XXXX-XXXX-7823', score:94, risk:'CRITICAL',
+    flaggedAgo:'6 hrs ago', totalFlow:'₹4.2Cr', cluster:'Alpha-7', role:'Hub Mule', sarRef:'SAR-2026-IOB-0947',
+    networkSize:18, states:7, passthrough:94, dormancy:'11 months', salary:'₹18,000/month',
+    signals:[
+      { icon:'⚡', name:'Transaction Velocity', desc:'87 transactions in 48 hrs (avg: 3/week)', score:96, color:'var(--red)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'94% of funds exit within 3.2 hours of receipt', score:94, color:'var(--red)' },
+      { icon:'💤', name:'Dormant-to-Active', desc:'Account inactive 11 months, suddenly activated', score:91, color:'var(--red)' },
+      { icon:'🎯', name:'Round Number Structuring', desc:'22 transactions exactly ₹50,000 or ₹1,00,000', score:88, color:'var(--orange)' },
+      { icon:'🌍', name:'Geographic Dispersion', desc:'Transactions from 7 states in 48 hrs', score:85, color:'var(--orange)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹18,000/month salary vs ₹4.2Cr movement', score:97, color:'var(--red)' },
+      { icon:'🔗', name:'Cascade Exposure', desc:'Hub to 17 connected accounts confirmed', score:99, color:'var(--red)' },
+    ],
+    transactions:[
+      { date:'Apr 5, 2026 · 02:14', type:'IMPS IN', amount:'₹50,000', party:'IOB-3012 (Priya V.)', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 02:31', type:'IMPS IN', amount:'₹50,000', party:'IOB-1934 (M. Farooq)', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 03:08', type:'IMPS IN', amount:'₹1,00,000', party:'IOB-5509 (Arun P.)', flag:'ODD HOUR' },
+      { date:'Apr 5, 2026 · 03:22', type:'UPI OUT', amount:'₹85,000', party:'IOB-7001 (Unknown A)', flag:'NEW BENE' },
+      { date:'Apr 5, 2026 · 03:45', type:'UPI OUT', amount:'₹65,000', party:'IOB-7002 (Unknown B)', flag:'NEW BENE' },
+      { date:'Apr 5, 2026 · 04:12', type:'NEFT IN', amount:'₹2,00,000', party:'IOB-6678 (Deepa K.)', flag:'HIGH VEL' },
+      { date:'Apr 5, 2026 · 04:29', type:'IMPS OUT', amount:'₹1,90,000', party:'IOB-7003 (Unknown C)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 06:11', type:'NEFT IN', amount:'₹5,00,000', party:'IOB-3345 (Anitha B.)', flag:'LARGE' },
+    ],
+    sarSummary:'Account IOB-2847 has been identified as the Hub Mule in a coordinated money laundering network (Cluster Alpha-7) comprising 18 accounts across 7 Indian states. A total of ₹4.2 Crore was passed through this account within a 48-hour window with a passthrough rate of 94%, consistent with the FATF "Layering" typology. The account was dormant for 11 months prior to activation on April 3, 2026.',
+    typology:'FATF Typology ML-09: Smurfing / Structuring via Mule Network',
+    action:'Immediate freeze on IOB-2847 and all 17 network accounts. STR filing with FIU-IND within 7 working days as per PMLA Section 12. Law enforcement referral to ED/cybercrime cell.',
+  },
+  'IOB-3012': {
+    name:'Priya Venkataraman', initials:'PV', branch:'IOB Mumbai-Andheri', acctNo:'3310-0082-6641',
+    opened:'March 3, 2023', pan:'BVNPV5678K', aadhaar:'XXXX-XXXX-4491', score:91, risk:'CRITICAL',
+    flaggedAgo:'18 min ago', totalFlow:'₹3.1Cr', cluster:'Beta-3', role:'Hub Mule', sarRef:'SAR-2026-IOB-0948',
+    networkSize:11, states:5, passthrough:87, dormancy:'9 months', salary:'₹22,000/month',
+    signals:[
+      { icon:'🌍', name:'Geographic Dispersion', desc:'Transactions from 5 states across 36 hrs', score:90, color:'var(--red)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'87% of funds exit within 5 hours of receipt', score:87, color:'var(--red)' },
+      { icon:'⚡', name:'Transaction Velocity', desc:'62 transactions in 36 hrs (avg: 2/week)', score:85, color:'var(--orange)' },
+      { icon:'💤', name:'Dormant-to-Active', desc:'Account inactive 9 months, suddenly activated', score:83, color:'var(--orange)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹22,000/month salary vs ₹3.1Cr movement', score:95, color:'var(--red)' },
+      { icon:'👥', name:'Network Proximity', desc:'Direct link to 3 confirmed mule accounts', score:88, color:'var(--red)' },
+      { icon:'🔗', name:'Cascade Exposure', desc:'Hub to 10 connected accounts identified', score:91, color:'var(--red)' },
+    ],
+    transactions:[
+      { date:'Apr 5, 2026 · 11:04', type:'NEFT IN', amount:'₹75,000', party:'IOB-8823 (Vikram S.)', flag:'HIGH VEL' },
+      { date:'Apr 5, 2026 · 11:22', type:'NEFT IN', amount:'₹1,00,000', party:'IOB-2203 (Kavitha S.)', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 11:45', type:'UPI OUT', amount:'₹90,000', party:'IOB-8001 (Unknown X)', flag:'NEW BENE' },
+      { date:'Apr 5, 2026 · 12:10', type:'IMPS IN', amount:'₹50,000', party:'IOB-7891 (Ravi P.)', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 12:30', type:'IMPS OUT', amount:'₹1,20,000', party:'IOB-8002 (Unknown Y)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 13:05', type:'NEFT IN', amount:'₹2,50,000', party:'External HDFC', flag:'LARGE' },
+      { date:'Apr 5, 2026 · 13:28', type:'UPI OUT', amount:'₹2,40,000', party:'IOB-8003 (Unknown Z)', flag:'PASSTHRU' },
+    ],
+    sarSummary:'Account IOB-3012 has been identified as the Hub Mule in Cluster Beta-3, a coordinated network of 11 accounts spanning 5 states. ₹3.1 Crore moved through this account over 36 hours with an 87% passthrough rate. Account was dormant for 9 months before activation on April 4, 2026.',
+    typology:'FATF Typology ML-07: Rapid Movement of Funds through Multiple Accounts',
+    action:'Immediate freeze on IOB-3012 and all 10 connected network accounts. STR filing with FIU-IND. Coordinate with Mumbai Police Cybercrime Cell.',
+  },
+  'IOB-1934': {
+    name:'Mohammed Farooq Ahmed', initials:'MF', branch:'IOB Hyderabad-Banjara', acctNo:'7741-0031-9920',
+    opened:'June 20, 2023', pan:'CFQMA2341H', aadhaar:'XXXX-XXXX-6612', score:88, risk:'CRITICAL',
+    flaggedAgo:'31 min ago', totalFlow:'₹2.8Cr', cluster:'Alpha-7', role:'Feeder', sarRef:'SAR-2026-IOB-0949',
+    networkSize:18, states:4, passthrough:79, dormancy:'7 months', salary:'₹15,000/month',
+    signals:[
+      { icon:'🎯', name:'Round Number Structuring', desc:'18 txns of exactly ₹50,000 — classic structuring', score:92, color:'var(--red)' },
+      { icon:'⚡', name:'Transaction Velocity', desc:'54 transactions in 30 hrs (avg: 1/week)', score:88, color:'var(--red)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'79% of funds forwarded to IOB-2847 (Hub)', score:79, color:'var(--orange)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹15,000/month salary vs ₹2.8Cr movement', score:96, color:'var(--red)' },
+      { icon:'💤', name:'Dormant-to-Active', desc:'Account inactive 7 months before activation', score:77, color:'var(--orange)' },
+      { icon:'🔗', name:'Hub Connection', desc:'Directly feeding IOB-2847 (confirmed Hub Mule)', score:99, color:'var(--red)' },
+    ],
+    transactions:[
+      { date:'Apr 4, 2026 · 22:10', type:'NEFT IN', amount:'₹50,000', party:'External SBI', flag:'ODD HOUR' },
+      { date:'Apr 4, 2026 · 22:35', type:'IMPS OUT', amount:'₹50,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 00:14', type:'NEFT IN', amount:'₹50,000', party:'External Axis', flag:'ODD HOUR' },
+      { date:'Apr 5, 2026 · 00:28', type:'IMPS OUT', amount:'₹50,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 01:55', type:'NEFT IN', amount:'₹1,00,000', party:'External ICICI', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 02:05', type:'IMPS OUT', amount:'₹1,00,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+    ],
+    sarSummary:'Account IOB-1934 is operating as a Feeder in Cluster Alpha-7, systematically collecting funds from external banks and forwarding 79% directly to Hub Mule IOB-2847 with near-zero hold time. ₹2.8 Crore transferred over 30 hours in round-number increments of ₹50,000 to avoid CTR thresholds.',
+    typology:'FATF Typology ML-09: Structuring / Smurfing as Feeder Node',
+    action:'Freeze IOB-1934 immediately. Trace external fund sources (SBI, Axis, ICICI). File linked SAR with IOB-2847 (SAR-2026-IOB-0947) to FIU-IND as coordinated network.',
+  },
+  'IOB-4421': {
+    name:'Suresh Babu Nair', initials:'SN', branch:'IOB Kochi-Ernakulam', acctNo:'6620-0055-4417',
+    opened:'September 5, 2023', pan:'DKNSB9012J', aadhaar:'XXXX-XXXX-3308', score:86, risk:'CRITICAL',
+    flaggedAgo:'45 min ago', totalFlow:'₹1.9Cr', cluster:'Alpha-7', role:'Feeder', sarRef:'SAR-2026-IOB-0950',
+    networkSize:18, states:3, passthrough:91, dormancy:'5 months', salary:'₹12,000/month',
+    signals:[
+      { icon:'🔄', name:'Pass-through Rate', desc:'91% funds forwarded within 2 hours of receipt', score:91, color:'var(--red)' },
+      { icon:'🎯', name:'Round Number Structuring', desc:'15 round-number transactions of ₹1,00,000', score:86, color:'var(--red)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹12,000/month salary vs ₹1.9Cr movement', score:94, color:'var(--red)' },
+      { icon:'💤', name:'Dormant-to-Active', desc:'5 months inactive, activated overnight', score:72, color:'var(--orange)' },
+      { icon:'🔗', name:'Hub Connection', desc:'Feeding directly to IOB-2847 (confirmed Hub)', score:99, color:'var(--red)' },
+    ],
+    transactions:[
+      { date:'Apr 5, 2026 · 00:31', type:'NEFT IN', amount:'₹1,00,000', party:'External PNB', flag:'ODD HOUR' },
+      { date:'Apr 5, 2026 · 00:49', type:'IMPS OUT', amount:'₹1,00,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 01:18', type:'NEFT IN', amount:'₹1,00,000', party:'External Canara', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 01:30', type:'IMPS OUT', amount:'₹95,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 03:42', type:'NEFT IN', amount:'₹5,00,000', party:'External BOB', flag:'LARGE' },
+      { date:'Apr 5, 2026 · 03:55', type:'IMPS OUT', amount:'₹4,90,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+    ],
+    sarSummary:'Account IOB-4421 is a Feeder node in Cluster Alpha-7, collecting funds from multiple PSU banks and forwarding 91% to Hub Mule IOB-2847. ₹1.9 Crore moved in 6 hours. Account holder declared monthly income of ₹12,000 — inconsistent with observed flows.',
+    typology:'FATF Typology ML-09: Smurfing via Feeder Accounts',
+    action:'Freeze IOB-4421. Coordinate with PNB, Canara and BOB to trace originating transactions. File linked STR with the Alpha-7 cluster to FIU-IND.',
+  },
+  'IOB-2203': {
+    name:'Kavitha Sundaram', initials:'KS', branch:'IOB Coimbatore-RS Puram', acctNo:'4418-0093-7710',
+    opened:'November 12, 2023', pan:'ESKSV3456L', aadhaar:'XXXX-XXXX-9921', score:85, risk:'CRITICAL',
+    flaggedAgo:'1 hr ago', totalFlow:'₹87L', cluster:'Beta-3', role:'Feeder', sarRef:'SAR-2026-IOB-0951',
+    networkSize:11, states:3, passthrough:83, dormancy:'8 months', salary:'₹20,000/month',
+    signals:[
+      { icon:'💤', name:'Dormant-to-Active', desc:'Account inactive 8 months, activated abruptly', score:85, color:'var(--red)' },
+      { icon:'👥', name:'Network Proximity', desc:'1 hop from confirmed Hub Mule IOB-3012', score:88, color:'var(--red)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'83% funds exit within 4 hours of receipt', score:83, color:'var(--orange)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹20,000/month salary vs ₹87L movement', score:90, color:'var(--red)' },
+      { icon:'⚡', name:'Transaction Velocity', desc:'29 transactions in 24 hrs (avg: 2/month)', score:80, color:'var(--orange)' },
+    ],
+    transactions:[
+      { date:'Apr 5, 2026 · 09:15', type:'NEFT IN', amount:'₹75,000', party:'External SBI', flag:'DORMANT' },
+      { date:'Apr 5, 2026 · 09:30', type:'UPI OUT', amount:'₹70,000', party:'IOB-3012 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 10:44', type:'NEFT IN', amount:'₹1,00,000', party:'External HDFC', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 10:55', type:'IMPS OUT', amount:'₹1,00,000', party:'IOB-3012 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 11:22', type:'NEFT IN', amount:'₹1,00,000', party:'IOB-2203 internal', flag:'ROUND AMT' },
+    ],
+    sarSummary:'Account IOB-2203 is a Feeder in Cluster Beta-3, receiving funds from external banks and forwarding them to Hub IOB-3012. ₹87 Lakh moved in 24 hours. Account was dormant for 8 months before abrupt activation.',
+    typology:'FATF Typology ML-07: Feeder in Multi-Account Layering Scheme',
+    action:'Freeze IOB-2203. Trace external SBI and HDFC sources. File linked STR with Beta-3 cluster.',
+  },
+  'IOB-5509': {
+    name:'Arun Prakash Iyer', initials:'AI', branch:'IOB Chennai-T Nagar', acctNo:'2291-0067-5504',
+    opened:'February 28, 2024', pan:'FYPAI7890M', aadhaar:'XXXX-XXXX-1147', score:83, risk:'CRITICAL',
+    flaggedAgo:'1.2 hrs ago', totalFlow:'₹1.2Cr', cluster:'Gamma-1', role:'Hub Mule', sarRef:'SAR-2026-IOB-0952',
+    networkSize:9, states:3, passthrough:76, dormancy:'6 months', salary:'₹25,000/month',
+    signals:[
+      { icon:'⚡', name:'Transaction Velocity', desc:'41 transactions in 20 hrs (avg: 3/month)', score:84, color:'var(--orange)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'76% funds redistributed within 6 hrs', score:76, color:'var(--orange)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹25,000/month salary vs ₹1.2Cr movement', score:88, color:'var(--red)' },
+      { icon:'💤', name:'Dormant-to-Active', desc:'Account inactive 6 months before activation', score:74, color:'var(--orange)' },
+      { icon:'🔗', name:'Cascade Exposure', desc:'Hub to 8 connected accounts in Gamma-1', score:83, color:'var(--orange)' },
+    ],
+    transactions:[
+      { date:'Apr 4, 2026 · 18:30', type:'NEFT IN', amount:'₹2,00,000', party:'External Axis', flag:'HIGH VEL' },
+      { date:'Apr 4, 2026 · 19:10', type:'UPI OUT', amount:'₹90,000', party:'IOB-9001 (Unknown P)', flag:'NEW BENE' },
+      { date:'Apr 4, 2026 · 19:22', type:'UPI OUT', amount:'₹90,000', party:'IOB-9002 (Unknown Q)', flag:'NEW BENE' },
+      { date:'Apr 4, 2026 · 21:05', type:'IMPS IN', amount:'₹1,00,000', party:'IOB-9102 (Meenakshi)', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 00:18', type:'NEFT IN', amount:'₹3,00,000', party:'External ICICI', flag:'ODD HOUR' },
+      { date:'Apr 5, 2026 · 00:35', type:'IMPS OUT', amount:'₹2,80,000', party:'IOB-9002 (Unknown Q)', flag:'PASSTHRU' },
+    ],
+    sarSummary:'Account IOB-5509 is the Hub Mule in Cluster Gamma-1, a 9-account network. ₹1.2 Crore cycled through this account in 20 hours with 76% passthrough rate. The account was dormant for 6 months before activation.',
+    typology:'FATF Typology ML-09: Hub-and-Spoke Mule Network',
+    action:'Freeze IOB-5509 and all 8 Gamma-1 network accounts. File STR with FIU-IND referencing Cluster Gamma-1.',
+  },
+  'IOB-6678': {
+    name:'Deepa Krishnamurthy', initials:'DK', branch:'IOB Bengaluru-Jayanagar', acctNo:'8830-0044-2213',
+    opened:'July 9, 2023', pan:'GKDKR4567N', aadhaar:'XXXX-XXXX-7734', score:81, risk:'CRITICAL',
+    flaggedAgo:'1.5 hrs ago', totalFlow:'₹65L', cluster:'Alpha-7', role:'Feeder', sarRef:'SAR-2026-IOB-0953',
+    networkSize:18, states:2, passthrough:88, dormancy:'4 months', salary:'₹17,000/month',
+    signals:[
+      { icon:'🌍', name:'Geographic Dispersion', desc:'Transactions across Karnataka and Tamil Nadu', score:72, color:'var(--orange)' },
+      { icon:'🎯', name:'Round Number Structuring', desc:'11 transactions of exactly ₹50,000', score:81, color:'var(--orange)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'88% funds forwarded to Alpha-7 Hub within 3 hrs', score:88, color:'var(--red)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹17,000/month salary vs ₹65L movement', score:85, color:'var(--red)' },
+      { icon:'🔗', name:'Hub Connection', desc:'Confirmed feeder into IOB-2847', score:99, color:'var(--red)' },
+    ],
+    transactions:[
+      { date:'Apr 5, 2026 · 01:10', type:'NEFT IN', amount:'₹50,000', party:'External Karnataka Bank', flag:'ODD HOUR' },
+      { date:'Apr 5, 2026 · 01:24', type:'IMPS OUT', amount:'₹50,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 02:40', type:'NEFT IN', amount:'₹50,000', party:'External Syndicate', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 02:55', type:'IMPS OUT', amount:'₹50,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 04:12', type:'NEFT IN', amount:'₹2,00,000', party:'External UBI', flag:'LARGE' },
+      { date:'Apr 5, 2026 · 04:22', type:'IMPS OUT', amount:'₹1,90,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+    ],
+    sarSummary:'Account IOB-6678 is a Feeder node in Cluster Alpha-7, aggregating funds from Karnataka-based banks and forwarding 88% to Hub IOB-2847 within 3 hours. ₹65 Lakh moved in 4 hours.',
+    typology:'FATF Typology ML-09: Feeder in Hub-and-Spoke Smurfing Network',
+    action:'Freeze IOB-6678. Trace Karnataka Bank, Syndicate and UBI sources. Link STR to Alpha-7 cluster filing.',
+  },
+  'IOB-7891': {
+    name:'Ravi Shankar Pillai', initials:'RP', branch:'IOB Trivandrum-Palayam', acctNo:'1102-0078-8843',
+    opened:'April 14, 2023', pan:'HSPRP6789P', aadhaar:'XXXX-XXXX-2256', score:80, risk:'CRITICAL',
+    flaggedAgo:'2 hrs ago', totalFlow:'₹43L', cluster:'Beta-3', role:'Feeder', sarRef:'SAR-2026-IOB-0954',
+    networkSize:11, states:2, passthrough:82, dormancy:'10 months', salary:'₹14,000/month',
+    signals:[
+      { icon:'💤', name:'Dormant-to-Active', desc:'Inactive for 10 months before sudden activation', score:88, color:'var(--red)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'82% funds forwarded to Beta-3 Hub within 4 hrs', score:82, color:'var(--orange)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹14,000/month salary vs ₹43L movement', score:84, color:'var(--orange)' },
+      { icon:'🔗', name:'Hub Connection', desc:'Confirmed feeder into IOB-3012 (Beta-3 Hub)', score:99, color:'var(--red)' },
+      { icon:'⚡', name:'Transaction Velocity', desc:'22 transactions in 18 hrs (avg: 1/month)', score:76, color:'var(--orange)' },
+    ],
+    transactions:[
+      { date:'Apr 5, 2026 · 08:20', type:'NEFT IN', amount:'₹50,000', party:'External Federal Bank', flag:'DORMANT' },
+      { date:'Apr 5, 2026 · 08:35', type:'UPI OUT', amount:'₹48,000', party:'IOB-3012 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 09:50', type:'NEFT IN', amount:'₹1,00,000', party:'External South Indian', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 10:02', type:'IMPS OUT', amount:'₹95,000', party:'IOB-3012 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 11:40', type:'NEFT IN', amount:'₹2,00,000', party:'External Dhanlaxmi', flag:'LARGE' },
+    ],
+    sarSummary:'Account IOB-7891 is a Feeder in Cluster Beta-3, dormant for 10 months before activation. ₹43 Lakh forwarded to Hub IOB-3012 with 82% passthrough. Funds traced to Kerala-based private banks.',
+    typology:'FATF Typology ML-07: Dormant Account Reactivation for Layering',
+    action:'Freeze IOB-7891. Trace Federal Bank, South Indian Bank and Dhanlaxmi Bank sources. Link STR to Beta-3 cluster.',
+  },
+  'IOB-3345': {
+    name:'Anitha Balasubramanian', initials:'AB', branch:'IOB Chennai-Velachery', acctNo:'9901-0012-3345',
+    opened:'August 18, 2023', pan:'IABAS8901Q', aadhaar:'XXXX-XXXX-5578', score:77, risk:'HIGH',
+    flaggedAgo:'2.3 hrs ago', totalFlow:'₹2.1Cr', cluster:'Alpha-7', role:'Feeder', sarRef:'SAR-2026-IOB-0955',
+    networkSize:18, states:4, passthrough:71, dormancy:'6 months', salary:'₹30,000/month',
+    signals:[
+      { icon:'👥', name:'Network Proximity', desc:'Direct connection to 4 flagged Alpha-7 accounts', score:84, color:'var(--orange)' },
+      { icon:'💤', name:'Dormant-to-Active', desc:'6 months dormant before activation', score:72, color:'var(--orange)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹30,000/month salary vs ₹2.1Cr movement', score:88, color:'var(--red)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'71% funds forwarded within 8 hrs', score:71, color:'var(--orange)' },
+      { icon:'🔗', name:'Hub Connection', desc:'Linked to IOB-2847 via 1-hop path', score:77, color:'var(--orange)' },
+    ],
+    transactions:[
+      { date:'Apr 5, 2026 · 06:11', type:'NEFT IN', amount:'₹5,00,000', party:'External Kotak', flag:'LARGE' },
+      { date:'Apr 5, 2026 · 06:45', type:'UPI OUT', amount:'₹4,80,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 08:00', type:'NEFT IN', amount:'₹3,00,000', party:'External Yes Bank', flag:'HIGH VEL' },
+      { date:'Apr 5, 2026 · 08:20', type:'IMPS OUT', amount:'₹2,90,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 10:10', type:'NEFT IN', amount:'₹2,00,000', party:'External RBL', flag:'HIGH VEL' },
+    ],
+    sarSummary:'Account IOB-3345 is a Feeder in Cluster Alpha-7. ₹2.1 Crore received from Kotak, Yes Bank and RBL and forwarded to Hub IOB-2847. Account was dormant for 6 months before activation.',
+    typology:'FATF Typology ML-09: Feeder Node in Mule Network',
+    action:'Freeze IOB-3345. Trace Kotak, Yes Bank and RBL sources. Link STR to Alpha-7 cluster.',
+  },
+  'IOB-8823': {
+    name:'Vikram Singh Yadav', initials:'VY', branch:'IOB Delhi-Karol Bagh', acctNo:'5512-0038-8823',
+    opened:'January 5, 2024', pan:'JYSVY1234R', aadhaar:'XXXX-XXXX-8812', score:74, risk:'HIGH',
+    flaggedAgo:'2.8 hrs ago', totalFlow:'₹58L', cluster:'Beta-3', role:'Feeder', sarRef:'SAR-2026-IOB-0956',
+    networkSize:11, states:3, passthrough:74, dormancy:'3 months', salary:'₹35,000/month',
+    signals:[
+      { icon:'⚡', name:'Transaction Velocity', desc:'31 transactions in 24 hrs (avg: 3/month)', score:74, color:'var(--orange)' },
+      { icon:'🎯', name:'Round Number Structuring', desc:'9 transactions of exactly ₹50,000 or ₹25,000', score:72, color:'var(--orange)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹35,000/month salary vs ₹58L movement', score:78, color:'var(--orange)' },
+      { icon:'🔗', name:'Hub Connection', desc:'Confirmed feeder to IOB-3012 (Beta-3 Hub)', score:88, color:'var(--red)' },
+      { icon:'💤', name:'Dormant-to-Active', desc:'3 months inactive before reactivation', score:60, color:'var(--yellow)' },
+    ],
+    transactions:[
+      { date:'Apr 5, 2026 · 07:40', type:'NEFT IN', amount:'₹50,000', party:'External PNB Delhi', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 07:55', type:'UPI OUT', amount:'₹50,000', party:'IOB-3012 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 09:20', type:'NEFT IN', amount:'₹25,000', party:'External BOB Delhi', flag:'ROUND AMT' },
+      { date:'Apr 5, 2026 · 09:30', type:'IMPS OUT', amount:'₹25,000', party:'IOB-3012 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 11:00', type:'NEFT IN', amount:'₹2,00,000', party:'External Union Bank', flag:'HIGH VEL' },
+    ],
+    sarSummary:'Account IOB-8823 is a Feeder in Cluster Beta-3, forwarding 74% of received funds to Hub IOB-3012. ₹58 Lakh moved in 24 hours in round-number structured transactions from Delhi-based PSU banks.',
+    typology:'FATF Typology ML-09: Structuring via Feeder in Mule Network',
+    action:'Freeze IOB-8823. Trace PNB, BOB Delhi and Union Bank sources. Link STR to Beta-3 cluster.',
+  },
+  'IOB-9102': {
+    name:'Meenakshi Raghavan', initials:'MR', branch:'IOB Madurai-Anna Nagar', acctNo:'6634-0021-9102',
+    opened:'May 3, 2023', pan:'KRMRA2345S', aadhaar:'XXXX-XXXX-4423', score:72, risk:'HIGH',
+    flaggedAgo:'3 hrs ago', totalFlow:'₹34L', cluster:'Gamma-1', role:'Feeder', sarRef:'SAR-2026-IOB-0957',
+    networkSize:9, states:2, passthrough:68, dormancy:'5 months', salary:'₹22,000/month',
+    signals:[
+      { icon:'🌍', name:'Geographic Dispersion', desc:'Transactions across Tamil Nadu and Kerala', score:66, color:'var(--yellow)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'68% funds forwarded to Gamma-1 Hub within 6 hrs', score:68, color:'var(--yellow)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹22,000/month salary vs ₹34L movement', score:76, color:'var(--orange)' },
+      { icon:'🔗', name:'Hub Connection', desc:'Confirmed feeder into IOB-5509 (Gamma-1 Hub)', score:88, color:'var(--red)' },
+      { icon:'💤', name:'Dormant-to-Active', desc:'5 months inactive before activation', score:70, color:'var(--orange)' },
+    ],
+    transactions:[
+      { date:'Apr 4, 2026 · 16:00', type:'NEFT IN', amount:'₹1,00,000', party:'External Karur Vysya', flag:'HIGH VEL' },
+      { date:'Apr 4, 2026 · 16:30', type:'IMPS OUT', amount:'₹90,000', party:'IOB-5509 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 4, 2026 · 19:15', type:'NEFT IN', amount:'₹1,00,000', party:'External Tamilnad', flag:'ROUND AMT' },
+      { date:'Apr 4, 2026 · 19:40', type:'IMPS OUT', amount:'₹95,000', party:'IOB-5509 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 4, 2026 · 21:10', type:'NEFT IN', amount:'₹50,000', party:'External City Union', flag:'ROUND AMT' },
+    ],
+    sarSummary:'Account IOB-9102 is a Feeder in Cluster Gamma-1. ₹34 Lakh received from Tamil Nadu-based regional banks and 68% forwarded to Hub IOB-5509 within 6 hours.',
+    typology:'FATF Typology ML-07: Regional Bank Layering via Feeder Account',
+    action:'Freeze IOB-9102. Trace Karur Vysya, Tamilnad Mercantile and City Union sources. Link STR to Gamma-1 cluster.',
+  },
+  'IOB-1156': {
+    name:'Gopal Krishnan Menon', initials:'GM', branch:'IOB Kozhikode-Calicut', acctNo:'3309-0091-1156',
+    opened:'October 22, 2022', pan:'LMGKM5678T', aadhaar:'XXXX-XXXX-6690', score:70, risk:'HIGH',
+    flaggedAgo:'3.5 hrs ago', totalFlow:'₹1.4Cr', cluster:'Alpha-7', role:'Feeder', sarRef:'SAR-2026-IOB-0958',
+    networkSize:18, states:2, passthrough:65, dormancy:'12 months', salary:'₹28,000/month',
+    signals:[
+      { icon:'🎯', name:'Round Number Structuring', desc:'12 transactions of exactly ₹1,00,000', score:74, color:'var(--orange)' },
+      { icon:'💤', name:'Dormant-to-Active', desc:'Longest dormancy — 12 months before activation', score:80, color:'var(--orange)' },
+      { icon:'📊', name:'Income-Flow Mismatch', desc:'₹28,000/month salary vs ₹1.4Cr movement', score:82, color:'var(--orange)' },
+      { icon:'🔗', name:'Hub Connection', desc:'Confirmed feeder to IOB-2847 (Alpha-7 Hub)', score:88, color:'var(--red)' },
+      { icon:'🔄', name:'Pass-through Rate', desc:'65% funds forwarded within 10 hrs', score:65, color:'var(--yellow)' },
+    ],
+    transactions:[
+      { date:'Apr 4, 2026 · 23:00', type:'NEFT IN', amount:'₹1,00,000', party:'External South Indian', flag:'ODD HOUR' },
+      { date:'Apr 4, 2026 · 23:20', type:'IMPS OUT', amount:'₹95,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 01:30', type:'NEFT IN', amount:'₹1,00,000', party:'External Dhanlaxmi', flag:'ODD HOUR' },
+      { date:'Apr 5, 2026 · 01:45', type:'IMPS OUT', amount:'₹1,00,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+      { date:'Apr 5, 2026 · 03:20', type:'NEFT IN', amount:'₹5,00,000', party:'External Federal Bank', flag:'LARGE' },
+      { date:'Apr 5, 2026 · 03:45', type:'IMPS OUT', amount:'₹4,50,000', party:'IOB-2847 (Hub)', flag:'PASSTHRU' },
+    ],
+    sarSummary:'Account IOB-1156 is a Feeder in Cluster Alpha-7 with the longest observed dormancy (12 months). ₹1.4 Crore collected from Kerala-based private banks and 65% forwarded to Hub IOB-2847.',
+    typology:'FATF Typology ML-09: Long-Dormant Account Activated for Mule Feeder Role',
+    action:'Freeze IOB-1156. Trace South Indian Bank, Dhanlaxmi and Federal Bank sources. Link STR to Alpha-7 cluster.',
+  },
+};
+
+let currentAccountId = 'IOB-2847';
+
+function renderDetail(id) {
+  const p = accountProfiles[id] || accountProfiles['IOB-2847'];
+  currentAccountId = p.acctNo ? id : 'IOB-2847';
+
+  // Update header card
+  document.querySelector('.detail-avatar').textContent = p.initials;
+  document.querySelector('.detail-name').textContent = p.name;
+  document.querySelector('.detail-meta').innerHTML = `
+    <span>🏦 ${p.branch}</span>
+    <span>📋 A/C: ${p.acctNo}</span>
+    <span>📅 Opened: ${p.opened}</span>
+    <span>⚠️ Cluster ${p.cluster} — ${p.role}</span>
+  `;
+  document.querySelector('.big-score-val').textContent = p.score;
+  document.querySelector('.big-score-val').style.color = p.score >= 85 ? 'var(--red)' : p.score >= 70 ? 'var(--orange)' : 'var(--yellow)';
+  const riskBadge = document.querySelector('.detail-header-card .risk-badge');
+  riskBadge.textContent = p.risk;
+  riskBadge.className = `risk-badge risk-${p.risk}`;
+  riskBadge.style.fontSize = '14px'; riskBadge.style.padding = '8px 20px';
+  document.querySelectorAll('.detail-header-card .big-score ~ div div')[0].textContent = `Flagged ${p.flaggedAgo}`;
+  document.querySelectorAll('.detail-header-card .big-score ~ div div')[1].textContent = `${p.totalFlow} total flow`;
+
+  document.getElementById('signalsGrid').innerHTML = p.signals.map(s => `
+    <div class="signal-row">
+      <div class="signal-icon">${s.icon}</div>
+      <div class="signal-info">
+        <div class="signal-name">${s.name}</div>
+        <div class="signal-desc">${s.desc}</div>
+      </div>
+      <div class="signal-bar-wrap">
+        <div class="signal-bar">
+          <div class="signal-bar-fill" style="width:${s.score}%;background:${s.color}"></div>
+        </div>
+      </div>
+      <div class="signal-score" style="color:${s.color}">${s.score}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('txnTimeline').innerHTML = p.transactions.map(t => `
+    <tr>
+      <td style="font-family:'Space Mono',monospace;font-size:11px">${t.date}</td>
+      <td><span style="color:${t.type.includes('IN')?'var(--green)':'var(--red)'};font-family:'Space Mono',monospace;font-size:11px;font-weight:700">${t.type}</span></td>
+      <td style="font-family:'Space Mono',monospace;color:var(--orange);font-weight:700">${t.amount}</td>
+      <td>${t.party}</td>
+      <td><span class="flag-tag">${t.flag}</span></td>
+    </tr>
+  `).join('');
+
+  document.getElementById('sarBody').innerHTML = `
+    <h3>SUSPICIOUS ACTIVITY REPORT — FIU-IND FORMAT</h3>
+    <p><strong>Report Reference:</strong> ${p.sarRef} &nbsp;|&nbsp; <strong>Date:</strong> April 6, 2026 &nbsp;|&nbsp; <strong>Branch:</strong> ${p.branch} &nbsp;|&nbsp; <strong>Reporting Officer:</strong> Auto-Generated (NetSentinel v2.1)</p>
+
+    <h3>1. Subject Account Details</h3>
+    <p>Account Holder: <strong>${p.name}</strong> &nbsp;|&nbsp; Account No: <strong>${p.acctNo}</strong> &nbsp;|&nbsp; Account Type: Savings &nbsp;|&nbsp; Opened: ${p.opened} &nbsp;|&nbsp; PAN: ${p.pan} &nbsp;|&nbsp; Aadhaar (masked): ${p.aadhaar}</p>
+
+    <h3>2. Executive Summary</h3>
+    <p>${p.sarSummary}</p>
+
+    <h3>3. Suspicious Activity Detected</h3>
+    <table class="sar-table">
+      <thead><tr><th>Signal</th><th>Observed Value</th><th>Threshold</th><th>Risk Score</th></tr></thead>
+      <tbody>
+        ${p.signals.map(s => `<tr><td>${s.name}</td><td>${s.desc}</td><td>Flagged above 60</td><td style="color:${s.color};font-weight:700">${s.score}/100</td></tr>`).join('')}
+      </tbody>
+    </table>
+
+    <h3>4. Network Analysis — Cluster ${p.cluster}</h3>
+    <p>Using graph network analysis (Louvain community detection), <strong>${p.networkSize - 1} additional accounts</strong> were identified as part of Cluster ${p.cluster}. This account is operating as a <strong>${p.role}</strong>. The network spans <strong>${p.states} states</strong> with a coordinated fund movement pattern consistent with Hub-and-Spoke money laundering.</p>
+
+    <h3>5. FATF Typology Classification</h3>
+    <p>This activity matches <strong>${p.typology}</strong>.</p>
+
+    <h3>6. Recommended Action</h3>
+    <p>${p.action}</p>
+
+    <h3>7. Compliance Officer Declaration</h3>
+    <p>This SAR was auto-generated by NetSentinel AML Intelligence Platform v2.1 and reviewed by the Compliance Officer. The information contained herein is accurate to the best of our knowledge based on available transaction data as of <strong>April 6, 2026 · 10:45 AM IST</strong>.</p>
+  `;
+}
+
+function openDetail(id) {
+  renderDetail(id);
+  showScreen('detailScreen', document.querySelectorAll('.nav-btn')[2]);
+}
+
+function downloadSAR() {
+  const btn = document.getElementById('downloadBtn');
+  btn.innerHTML = '⏳ Generating PDF...';
+  btn.disabled = true;
 
   setTimeout(() => {
-    document.getElementById('ob-needle').style.left = score + '%';
-  }, 150);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  const verdict = document.getElementById('ob-verdict');
-  const action = document.getElementById('ob-action');
-  const flagsEl = document.getElementById('ob-flags');
+    // Header
+    doc.setFillColor(5, 8, 16);
+    doc.rect(0, 0, 210, 297, 'F');
 
-  if (score >= 65) {
-    scoreEl.style.color = '#FF3B5C';
-    verdict.textContent = 'HIGH RISK — Block Onboarding';
-    verdict.style.cssText = 'background:#2A0A12;color:#FF3B5C;border:1px solid #FF3B5C44;';
-    action.style.cssText = 'background:#1A0810;border-left:3px solid #FF3B5C;margin-top:14px;padding:14px 16px;border-radius:8px;font-size:13px;line-height:1.8;';
-    action.innerHTML = '<strong style="color:#FF3B5C">Recommended Action</strong><br>Block account activation immediately. Flag for manual review by AML officer. Do not proceed without senior approval and additional ID verification.';
-  } else if (score >= 35) {
-    scoreEl.style.color = '#FFD166';
-    verdict.textContent = 'MEDIUM RISK — Enhanced Verification';
-    verdict.style.cssText = 'background:#1F1A08;color:#FFD166;border:1px solid #FFD16644;';
-    action.style.cssText = 'background:#12100A;border-left:3px solid #FFD166;margin-top:14px;padding:14px 16px;border-radius:8px;font-size:13px;line-height:1.8;';
-    action.innerHTML = '<strong style="color:#FFD166">Recommended Action</strong><br>Request additional KYC documents before activation. Enable enhanced transaction monitoring. Flag for 30-day review after account opening.';
+    doc.setFillColor(0, 180, 220);
+    doc.rect(0, 0, 210, 28, 'F');
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('NETSENTI NEL', 14, 12);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('AML Intelligence Platform — Suspicious Activity Report', 14, 20);
+    doc.text('SAR-2026-IOB-0947 | April 6, 2026', 14, 26);
+
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONFIDENTIAL — FIU-IND SUBMISSION', 210-14, 12, { align: 'right' });
+
+    let y = 38;
+    const addSection = (title, content) => {
+      doc.setTextColor(0, 212, 255);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, 14, y); y += 6;
+
+      doc.setTextColor(200, 210, 230);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(content, 182);
+      lines.forEach(line => {
+        if (y > 280) { doc.addPage(); doc.setFillColor(5,8,16); doc.rect(0,0,210,297,'F'); y = 20; }
+        doc.text(line, 14, y); y += 5;
+      });
+      y += 4;
+    };
+
+    addSection('1. SUBJECT ACCOUNT DETAILS',
+      'Account Holder: Rajesh Kumar Sharma  |  Account No: 5892-0047-3812  |  Account Type: Savings\nBranch: IOB Chennai-Adyar  |  Opened: January 14, 2024  |  PAN: ABCRS1234D  |  Aadhaar (masked): XXXX-XXXX-7823');
+
+    addSection('2. EXECUTIVE SUMMARY',
+      'Account IOB-2847 has been identified as the Hub Mule in a coordinated money laundering network (Cluster Alpha-7) comprising 18 accounts across 7 Indian states. A total of Rs. 4.2 Crore was passed through this account within a 48-hour window with a passthrough rate of 94%, consistent with the FATF "Layering" typology. The account was dormant for 11 months prior to activation on April 3, 2026.');
+
+    addSection('3. SUSPICIOUS SIGNALS DETECTED',
+      'Transaction Velocity: 87 txns / 48 hrs (threshold: >15 = suspicious) — Risk Score: 96/100\nPassthrough Rate: 94% within 3.2 hrs (threshold: >70% = suspicious) — Risk Score: 94/100\nDormancy Period: 11 months inactive (threshold: >3 months = flag) — Risk Score: 91/100\nRound-Number Structuring: 22 transactions of exactly Rs.50,000 / Rs.1,00,000 — Risk Score: 88/100\nGeographic Dispersion: Activity across 7 states in 48 hrs — Risk Score: 85/100\nIncome vs Flow Mismatch: Rs.18,000 salary vs Rs.4.2 Crore movement — Risk Score: 97/100');
+
+    addSection('4. NETWORK ANALYSIS — CLUSTER ALPHA-7',
+      'Using graph network analysis (Louvain community detection algorithm), 17 additional accounts were identified as part of this network. The structure follows a classic Hub-and-Spoke laundering pattern: 5 feeder accounts aggregate funds into the hub (IOB-2847), which then rapidly distributes to 7+ payout accounts across different bank branches and states.');
+
+    addSection('5. FATF TYPOLOGY CLASSIFICATION',
+      'FATF Typology ML-09: Smurfing / Structuring via Mule Network — coordinated use of multiple accounts to break large illegal sums into smaller transfers to avoid detection thresholds, followed by rapid consolidation and dispersal.');
+
+    addSection('6. RECOMMENDED ACTION',
+      '1. Immediate freeze on IOB-2847 and all 17 network accounts pending investigation.\n2. STR filing with FIU-IND within 7 working days as per PMLA Section 12.\n3. Law enforcement referral to ED/local cybercrime cell for criminal network investigation.\n4. Customer verification — physical KYC re-verification for all flagged accounts.');
+
+    addSection('7. COMPLIANCE OFFICER DECLARATION',
+      'This SAR was auto-generated by NetSentinel AML Intelligence Platform v2.1 and reviewed by the Compliance Officer. The information contained herein is accurate to the best of our knowledge based on available transaction data as of April 6, 2026, 10:45 AM IST.\n\nCompliance Officer Signature: _______________________\nDate: _______________  |  Employee ID: _______________');
+
+    // Footer
+    doc.setFillColor(0, 212, 255);
+    doc.rect(0, 289, 210, 8, 'F');
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('NETSENTINEL — INDIAN OVERSEAS BANK AML INTELLIGENCE PLATFORM — CONFIDENTIAL', 105, 294, { align: 'center' });
+
+    const p = accountProfiles[currentAccountId] || accountProfiles['IOB-2847'];
+    const safeName = p.name.replace(/\s+/g, '');
+    doc.save(`${p.sarRef}-${safeName}.pdf`);
+
+    btn.innerHTML = '✅ Downloaded!';
+    btn.style.background = 'linear-gradient(135deg, var(--green), #00b059)';
+    setTimeout(() => {
+      btn.innerHTML = '⬇ Download SAR (PDF)';
+      btn.style.background = '';
+      btn.disabled = false;
+    }, 3000);
+  }, 1200);
+}
+
+// ===================== ONBOARDING =====================
+function runOnboardingCheck() {
+  const device = document.getElementById('f_device').value;
+  const ip = document.getElementById('f_ip').value;
+  const doc_ = document.getElementById('f_doc').value;
+  const network = document.getElementById('f_network').value;
+  const name = document.getElementById('f_name').value;
+
+  let score = 0;
+  const flags = [];
+
+  if (device === 'flagged') { score += 35; flags.push('Device linked to flagged accounts'); }
+  else if (device === 'shared') { score += 45; flags.push('Device used in 7+ applications'); }
+
+  if (ip === 'mismatch') { score += 25; flags.push('Location-address mismatch'); }
+  else if (ip === 'vpn') { score += 20; flags.push('VPN / masked location'); }
+
+  if (doc_ === 'template') { score += 30; flags.push('Possible document forgery'); }
+  else if (doc_ === 'mismatch') { score += 25; flags.push('Photo metadata mismatch'); }
+
+  if (network === '1hop') { score += 20; flags.push('1 hop from flagged account'); }
+  else if (network === 'direct') { score += 45; flags.push('Direct link to confirmed mule'); }
+
+  score = Math.min(score, 99);
+
+  const resultPanel = document.getElementById('onboardResult');
+
+  let verdict, color, reason, action;
+  if (score >= 60) {
+    verdict = '🚫 BLOCKED'; color = 'var(--red)'; action = 'Account activation blocked pending manual review';
+    reason = 'Multiple high-risk signals detected. This application matches known mule account patterns.';
+  } else if (score >= 30) {
+    verdict = '⚠️ REVIEW'; color = 'var(--orange)'; action = 'Step-up verification required before activation';
+    reason = 'Suspicious signals detected. Additional verification required before account activation.';
   } else {
-    scoreEl.style.color = '#06D6A0';
-    verdict.textContent = 'LOW RISK — Clear to Proceed';
-    verdict.style.cssText = 'background:#081A14;color:#06D6A0;border:1px solid #06D6A044;';
-    action.style.cssText = 'background:#05120E;border-left:3px solid #06D6A0;margin-top:14px;padding:14px 16px;border-radius:8px;font-size:13px;line-height:1.8;';
-    action.innerHTML = '<strong style="color:#06D6A0">Recommended Action</strong><br>Account can be activated with standard monitoring. No additional verification required at this time.';
+    verdict = '✅ APPROVED'; color = 'var(--green)'; action = 'Account can be activated — continue with standard KYC';
+    reason = 'No significant risk signals detected. Application appears legitimate.';
+    flags.push('Clean device fingerprint');
+    flags.push('Location matches address');
+    flags.push('No network proximity to mules');
   }
 
-  flagsEl.innerHTML = flags.length
-    ? '<div style="font-size:11px;font-weight:600;color:#6B8BAA;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Risk Flags Detected</div>'
-      + flags.map(f => `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;font-size:12px;color:${f.c};line-height:1.6"><span style="margin-top:2px;flex-shrink:0">●</span><span>${f.t}</span></div>`).join('')
-    : '<div style="font-size:12px;color:#06D6A0;margin-bottom:10px">● No risk flags detected — applicant profile is clean</div>';
+  const circumference = 2 * Math.PI * 60;
+  const fillAmount = (score / 100) * circumference;
+
+  resultPanel.innerHTML = `
+    <div style="text-align:center;width:100%">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Application: ${name}</div>
+      <div class="result-score-ring" style="margin:0 auto 20px">
+        <svg viewBox="0 0 140 140" width="140" height="140">
+          <circle cx="70" cy="70" r="60" fill="none" stroke="var(--border2)" stroke-width="8"/>
+          <circle cx="70" cy="70" r="60" fill="none" stroke="${color}" stroke-width="8"
+            stroke-dasharray="${fillAmount} ${circumference}"
+            stroke-linecap="round"
+            style="transition:stroke-dasharray 1s ease;transform:rotate(-90deg);transform-origin:center"/>
+        </svg>
+        <div class="result-score-center">
+          <div class="result-score-num" style="color:${color}">${score}</div>
+          <div class="result-score-label">Risk Score</div>
+        </div>
+      </div>
+      <div class="result-verdict" style="color:${color}">${verdict}</div>
+      <div class="result-reason">${reason}</div>
+      <div style="margin-top:12px;padding:10px 16px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:12px;color:var(--text2)">${action}</div>
+      ${flags.length > 0 ? `<div class="result-flags">${flags.map(f=>`<span class="result-flag" style="color:${score>=60?'#ff8a9e':score>=30?'var(--orange)':'var(--green)'};">${f}</span>`).join('')}</div>` : ''}
+    </div>
+  `;
 }
+
+// ===================== NAVIGATION =====================
+function showScreen(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+
+  if (id === 'graphScreen') {
+    setTimeout(() => { initGraph(); }, 100);
+  }
+}
+
+// ===================== INIT =====================
+renderAlerts(alerts);
+renderFeed(feedMessages);
+renderDetail('IOB-2847');
 </script>
 </body>
 </html>
